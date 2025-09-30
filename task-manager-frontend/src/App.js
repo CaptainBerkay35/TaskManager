@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import TaskList from './components/Task/TaskList.jsx';
 import CategoryManager from './components/Category/CategoryManager.jsx';
+import Dashboard from './components/Dashboard/Dashboard';
+
 
 function App() {
   const [activeTab, setActiveTab] = useState('tasks');
@@ -19,6 +21,16 @@ function App() {
 
         <div className="mb-6">
           <div className="bg-white rounded-lg shadow p-1 inline-flex gap-1">
+             <button
+              onClick={() => setActiveTab('dashboard')}
+              className={`px-6 py-2 rounded-lg font-medium transition ${
+                activeTab === 'dashboard'
+                  ? 'bg-indigo-600 text-white'
+                  : 'text-gray-600 hover:bg-gray-100'
+              }`}
+            >
+              Dashboard
+            </button>
             <button
               onClick={() => setActiveTab('tasks')}
               className={`px-6 py-2 rounded-lg font-medium transition ${
@@ -43,6 +55,7 @@ function App() {
         </div>
         
         <main>
+          {activeTab === 'dashboard' && <Dashboard />}
           {activeTab === 'tasks' && <TaskList />}
           {activeTab === 'categories' && <CategoryManager />}
         </main>
