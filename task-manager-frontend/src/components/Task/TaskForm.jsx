@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { tasksAPI, categoriesAPI } from '../services/api';
+import { tasksAPI, categoriesAPI } from '../../services/api';
 
 function TaskForm({ onClose, onSuccess, editTask = null }) {
   const [categories, setCategories] = useState([]);
