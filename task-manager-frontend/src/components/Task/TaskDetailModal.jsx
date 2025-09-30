@@ -1,0 +1,213 @@
+import { useState } from 'react';
+import SubTaskList from './SubTaskList';
+
+function TaskDetailModal({ task, onClose, onEdit, onDelete }) {
+  const [activeTab, setActiveTab] = useState('details');
+
+  const getPriorityColor = (priority) => {
+    switch (priority) {
+      case 4: return 'bg-red-100 text-red-800';
+      case 3: return 'bg-orange-100 text-orange-800';
+      case 2: return 'bg-yellow-100 text-yellow-800';
+      default: return 'bg-green-100 text-green-800';
+    }
+  };
+
+  const getPriorityText = (priority) => {
+    switch (priority) {
+      case 4: return 'Acil';
+      case 3: return 'Yüksek';
+      case 2: return 'Orta';
+      default: return 'Düşük';
+    }
+  };
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'Tamamlandı': return 'bg-blue-100 text-blue-800';
+      case 'Devam Ediyor': return 'bg-purple-100 text-purple-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const isOverdue = () => {
+    if (!task.dueDate || task.status === 'Tamamlandı') return false;
+    return new Date(task.dueDate) < new Date();
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+      <div className="bg-white rounded-xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-hidden">
+        {/* Header */}
+        <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-6">
+          <div className="flex justify-between items-start mb-4">
+            <div className="flex-1">
+              <h2 className="text-2xl font-bold mb-2">{task.title}</h2>
+              <div className="flex gap-2 flex-wrap">
+                <span className={`px-3 py-1 rounded-full text-sm font-medium ${getPriorityColor(task.priority)} bg-opacity-90`}>
+                  {getPriorityText(task.priority)}
+                </span>
+                <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(task.status)} bg-opacity-90`}>
+                  {task.status}
+                </span>
+                {task.category && (
+                  <span 
+                    className="px-3 py-1 rounded-full text-sm font-medium text-white"
+                    style={{ backgroundColor: task.category.color }}
+                  >
+                    {task.category.name}
+                  </span>
+                )}
+              </div>
+            </div>
+            <button
+              onClick={onClose}
+              className="text-white hover:bg-white hover:bg-opacity-20 rounded-lg p-2 transition"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex gap-2">
+            <button
+              onClick={() => {
+                onEdit(task);
+                onClose();
+              }}
+              className="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-2 rounded-lg transition flex items-center gap-2"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+              </svg>
+              Düzenle
+            </button>
+            <button
+              onClick={() => {
+                onDelete(task.id);
+                onClose();
+              }}
+              className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition flex items-center gap-2"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+              Sil
+            </button>
+          </div>
+        </div>
+
+        {/* Tabs */}
+        <div className="border-b border-gray-200">
+          <div className="flex">
+            <button
+              onClick={() => setActiveTab('details')}
+              className={`px-6 py-3 font-medium transition ${
+                activeTab === 'details'
+                  ? 'text-indigo-600 border-b-2 border-indigo-600'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              Detaylar
+            </button>
+            <button
+              onClick={() => setActiveTab('subtasks')}
+              className={`px-6 py-3 font-medium transition ${
+                activeTab === 'subtasks'
+                  ? 'text-indigo-600 border-b-2 border-indigo-600'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              Alt Görevler
+            </button>
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="p-6 overflow-y-auto max-h-[calc(90vh-300px)]">
+          {activeTab === 'details' && (
+            <div className="space-y-6">
+              {/* Description */}
+              {task.description && (
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-700 mb-2">Açıklama</h3>
+                  <p className="text-gray-600 bg-gray-50 p-4 rounded-lg">{task.description}</p>
+                </div>
+              )}
+
+              {/* Dates */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h3 className="text-sm font-semibold text-gray-700 mb-1">Oluşturulma Tarihi</h3>
+                  <p className="text-gray-800">
+                    {new Date(task.createdDate).toLocaleDateString('tr-TR', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}
+                  </p>
+                </div>
+
+                {task.dueDate && (
+                  <div className={`p-4 rounded-lg ${isOverdue() ? 'bg-red-50 border border-red-200' : 'bg-gray-50'}`}>
+                    <h3 className="text-sm font-semibold text-gray-700 mb-1">Son Teslim Tarihi</h3>
+                    <p className={`font-medium ${isOverdue() ? 'text-red-600' : 'text-gray-800'}`}>
+                      {isOverdue() && '⚠ '}
+                      {new Date(task.dueDate).toLocaleDateString('tr-TR', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      })}
+                    </p>
+                    {isOverdue() && (
+                      <p className="text-xs text-red-600 mt-1">Gecikmiş</p>
+                    )}
+                  </div>
+                )}
+
+                {task.completedDate && (
+                  <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                    <h3 className="text-sm font-semibold text-gray-700 mb-1">Tamamlanma Tarihi</h3>
+                    <p className="text-green-800 font-medium">
+                      {new Date(task.completedDate).toLocaleDateString('tr-TR', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Additional Info */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h3 className="text-sm font-semibold text-gray-700 mb-1">Durum</h3>
+                  <p className="text-gray-800">{task.status}</p>
+                </div>
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h3 className="text-sm font-semibold text-gray-700 mb-1">Öncelik</h3>
+                  <p className="text-gray-800">{getPriorityText(task.priority)}</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'subtasks' && (
+            <div>
+              <SubTaskList taskId={task.id} />
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default TaskDetailModal;
