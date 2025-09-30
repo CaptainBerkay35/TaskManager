@@ -13,6 +13,7 @@ function TaskList() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterPriority, setFilterPriority] = useState("all");
+  const [filterCategory, setFilterCategory] = useState("all");
 
   useEffect(() => {
     fetchTasks();
@@ -66,10 +67,16 @@ function TaskList() {
   const filteredTasks = tasks.filter((task) => {
     const matchesSearch =
       task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (task.description && task.description.toLowerCase().includes(searchTerm.toLowerCase()));
-    const matchesStatus = filterStatus === "all" || task.status === filterStatus;
-    const matchesPriority = filterPriority === "all" || task.priority === parseInt(filterPriority);
-    return matchesSearch && matchesStatus && matchesPriority;
+      (task.description &&
+        task.description.toLowerCase().includes(searchTerm.toLowerCase()));
+    const matchesStatus =
+      filterStatus === "all" || task.status === filterStatus;
+    const matchesPriority =
+      filterPriority === "all" || task.priority === parseInt(filterPriority);
+    const matchesCategory =
+      filterCategory === "all" || task.categoryId === parseInt(filterCategory);
+
+    return matchesSearch && matchesStatus && matchesPriority && matchesCategory;
   });
 
   if (loading) {
@@ -107,6 +114,8 @@ function TaskList() {
         setFilterStatus={setFilterStatus}
         filterPriority={filterPriority}
         setFilterPriority={setFilterPriority}
+        filterCategory={filterCategory}
+        setFilterCategory={setFilterCategory}
       />
 
       {tasks.length === 0 ? (
