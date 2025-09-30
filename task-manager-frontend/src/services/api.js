@@ -27,4 +27,12 @@ export const categoriesAPI = {
   delete: (id) => api.delete(`/categories/${id}`),
 };
 
+// SubTasks API
+export const subTasksAPI = {
+  getByTask: (taskId) => api.get(`/subtasks/ByTask/${taskId}`),
+  create: (subTask) => api.post('/subtasks', subTask),
+  update: (id, subTask) => api.put(`/subtasks/${id}`, subTask),
+  delete: (id) => api.delete(`/subtasks/${id}`),
+};
+
 export default api;
