@@ -6,10 +6,10 @@ function TaskDetailModal({ task, onClose, onEdit, onDelete }) {
 
   const getPriorityColor = (priority) => {
     switch (priority) {
-      case 4: return 'bg-red-100 text-red-800';
-      case 3: return 'bg-orange-100 text-orange-800';
-      case 2: return 'bg-yellow-100 text-yellow-800';
-      default: return 'bg-green-100 text-green-800';
+      case 4: return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400';
+      case 3: return 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400';
+      case 2: return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400';
+      default: return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
     }
   };
 
@@ -24,9 +24,9 @@ function TaskDetailModal({ task, onClose, onEdit, onDelete }) {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'Tamamlandı': return 'bg-blue-100 text-blue-800';
-      case 'Devam Ediyor': return 'bg-purple-100 text-purple-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'Tamamlandı': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400';
+      case 'Devam Ediyor': return 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400';
+      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
     }
   };
 
@@ -37,9 +37,9 @@ function TaskDetailModal({ task, onClose, onEdit, onDelete }) {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl dark:shadow-gray-900/50 max-w-3xl w-full max-h-[90vh] overflow-hidden">
         {/* Header */}
-        <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-6">
+        <div className="bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-700 dark:to-purple-700 text-white p-6">
           <div className="flex justify-between items-start mb-4">
             <div className="flex-1">
               <h2 className="text-2xl font-bold mb-2">{task.title}</h2>
@@ -89,7 +89,7 @@ function TaskDetailModal({ task, onClose, onEdit, onDelete }) {
                 onDelete(task.id);
                 onClose();
               }}
-              className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition flex items-center gap-2"
+              className="bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 text-white px-4 py-2 rounded-lg transition flex items-center gap-2"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -100,14 +100,14 @@ function TaskDetailModal({ task, onClose, onEdit, onDelete }) {
         </div>
 
         {/* Tabs */}
-        <div className="border-b border-gray-200">
+        <div className="border-b border-gray-200 dark:border-gray-700">
           <div className="flex">
             <button
               onClick={() => setActiveTab('details')}
               className={`px-6 py-3 font-medium transition ${
                 activeTab === 'details'
-                  ? 'text-indigo-600 border-b-2 border-indigo-600'
-                  : 'text-gray-500 hover:text-gray-700'
+                  ? 'text-indigo-600 dark:text-indigo-400 border-b-2 border-indigo-600 dark:border-indigo-400'
+                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
               }`}
             >
               Detaylar
@@ -116,8 +116,8 @@ function TaskDetailModal({ task, onClose, onEdit, onDelete }) {
               onClick={() => setActiveTab('subtasks')}
               className={`px-6 py-3 font-medium transition ${
                 activeTab === 'subtasks'
-                  ? 'text-indigo-600 border-b-2 border-indigo-600'
-                  : 'text-gray-500 hover:text-gray-700'
+                  ? 'text-indigo-600 dark:text-indigo-400 border-b-2 border-indigo-600 dark:border-indigo-400'
+                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
               }`}
             >
               Alt Görevler
@@ -132,16 +132,16 @@ function TaskDetailModal({ task, onClose, onEdit, onDelete }) {
               {/* Description */}
               {task.description && (
                 <div>
-                  <h3 className="text-sm font-semibold text-gray-700 mb-2">Açıklama</h3>
-                  <p className="text-gray-600 bg-gray-50 p-4 rounded-lg">{task.description}</p>
+                  <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Açıklama</h3>
+                  <p className="text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">{task.description}</p>
                 </div>
               )}
 
               {/* Dates */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <h3 className="text-sm font-semibold text-gray-700 mb-1">Oluşturulma Tarihi</h3>
-                  <p className="text-gray-800">
+                <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                  <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Oluşturulma Tarihi</h3>
+                  <p className="text-gray-800 dark:text-gray-200">
                     {new Date(task.createdDate).toLocaleDateString('tr-TR', {
                       year: 'numeric',
                       month: 'long',
@@ -153,9 +153,9 @@ function TaskDetailModal({ task, onClose, onEdit, onDelete }) {
                 </div>
 
                 {task.dueDate && (
-                  <div className={`p-4 rounded-lg ${isOverdue() ? 'bg-red-50 border border-red-200' : 'bg-gray-50'}`}>
-                    <h3 className="text-sm font-semibold text-gray-700 mb-1">Son Teslim Tarihi</h3>
-                    <p className={`font-medium ${isOverdue() ? 'text-red-600' : 'text-gray-800'}`}>
+                  <div className={`p-4 rounded-lg ${isOverdue() ? 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800' : 'bg-gray-50 dark:bg-gray-700'}`}>
+                    <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Son Teslim Tarihi</h3>
+                    <p className={`font-medium ${isOverdue() ? 'text-red-600 dark:text-red-400' : 'text-gray-800 dark:text-gray-200'}`}>
                       {isOverdue() && '⚠ '}
                       {new Date(task.dueDate).toLocaleDateString('tr-TR', {
                         year: 'numeric',
@@ -164,15 +164,15 @@ function TaskDetailModal({ task, onClose, onEdit, onDelete }) {
                       })}
                     </p>
                     {isOverdue() && (
-                      <p className="text-xs text-red-600 mt-1">Gecikmiş</p>
+                      <p className="text-xs text-red-600 dark:text-red-400 mt-1">Gecikmiş</p>
                     )}
                   </div>
                 )}
 
                 {task.completedDate && (
-                  <div className="bg-green-50 p-4 rounded-lg border border-green-200">
-                    <h3 className="text-sm font-semibold text-gray-700 mb-1">Tamamlanma Tarihi</h3>
-                    <p className="text-green-800 font-medium">
+                  <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg border border-green-200 dark:border-green-800">
+                    <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Tamamlanma Tarihi</h3>
+                    <p className="text-green-800 dark:text-green-400 font-medium">
                       {new Date(task.completedDate).toLocaleDateString('tr-TR', {
                         year: 'numeric',
                         month: 'long',
@@ -187,13 +187,13 @@ function TaskDetailModal({ task, onClose, onEdit, onDelete }) {
 
               {/* Additional Info */}
               <div className="grid grid-cols-2 gap-4">
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <h3 className="text-sm font-semibold text-gray-700 mb-1">Durum</h3>
-                  <p className="text-gray-800">{task.status}</p>
+                <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                  <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Durum</h3>
+                  <p className="text-gray-800 dark:text-gray-200">{task.status}</p>
                 </div>
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <h3 className="text-sm font-semibold text-gray-700 mb-1">Öncelik</h3>
-                  <p className="text-gray-800">{getPriorityText(task.priority)}</p>
+                <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                  <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Öncelik</h3>
+                  <p className="text-gray-800 dark:text-gray-200">{getPriorityText(task.priority)}</p>
                 </div>
               </div>
             </div>
