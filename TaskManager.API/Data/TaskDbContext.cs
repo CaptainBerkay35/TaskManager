@@ -11,6 +11,7 @@ namespace TaskManager.API.Data
 
         public DbSet<TaskItem> Tasks { get; set; }
         public DbSet<Category> Categories { get; set; }
+        public DbSet<SubTask> SubTasks { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -21,6 +22,14 @@ namespace TaskManager.API.Data
 
             // Category tablosunu Categories olarak adlandır
             modelBuilder.Entity<Category>().ToTable("Categories");
+
+            modelBuilder.Entity<SubTask>().ToTable("SubTasks");
+
+            modelBuilder.Entity<SubTask>()
+                .HasOne(st => st.Task)
+                .WithMany()
+                .HasForeignKey(st => st.TaskId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             // İlişkileri tanımla
             modelBuilder.Entity<TaskItem>()
