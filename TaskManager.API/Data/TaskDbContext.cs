@@ -13,6 +13,7 @@ namespace TaskManager.API.Data
         public DbSet<Category> Categories { get; set; }
         public DbSet<SubTask> SubTasks { get; set; }
         public DbSet<User> Users { get; set; }
+        public DbSet<Project> Projects { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -23,6 +24,8 @@ namespace TaskManager.API.Data
             modelBuilder.Entity<Category>().ToTable("Categories");
             modelBuilder.Entity<SubTask>().ToTable("SubTasks");
             modelBuilder.Entity<User>().ToTable("Users");
+            modelBuilder.Entity<Project>().ToTable("Projects");
+
 
             // SubTask ilişkileri
             modelBuilder.Entity<SubTask>()
@@ -40,9 +43,9 @@ namespace TaskManager.API.Data
 
             // TaskItem - User ilişkisi
             modelBuilder.Entity<TaskItem>()
-                .HasOne<User>()
-                .WithMany(u => u.Tasks)
-                .HasForeignKey(t => t.UserId)
+                .HasOne(t => t.Project)
+                .WithMany(p => p.Tasks)
+                .HasForeignKey(t => t.ProjectId)
                 .OnDelete(DeleteBehavior.SetNull);
 
             // Category - User ilişkisi
@@ -51,6 +54,12 @@ namespace TaskManager.API.Data
                 .WithMany(u => u.Categories)
                 .HasForeignKey(c => c.UserId)
                 .OnDelete(DeleteBehavior.SetNull);
+
+            modelBuilder.Entity<Project>()
+                .HasOne<User>()
+                .WithMany()
+                .HasForeignKey(p => p.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

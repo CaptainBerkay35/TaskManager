@@ -13,6 +13,8 @@
         public DateTime? DueDate { get; set; }
         public DateTime? CompletedDate { get; set; }
         public int? UserId { get; set; }
+        public int? ProjectId { get; set; }
+        public Project? Project { get; set; }
 
         // Navigation Property
         public Category? Category { get; set; }
