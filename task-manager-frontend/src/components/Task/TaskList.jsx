@@ -40,7 +40,6 @@ function TaskList() {
   };
 
   const handleDeleteClick = (task) => {
-    console.log("task",task.title);
     setDeleteConfirm({
       show: true,
       taskId: task.id,
@@ -68,13 +67,28 @@ function TaskList() {
       const updatedTask = {
         ...task,
         isCompleted: !task.isCompleted,
-        status: !task.isCompleted ? "Tamamlandı" : "Bekliyor",
+        status: !task.isCompleted ? "Tamamlandı" : "Devam Ediyor",
         completedDate: !task.isCompleted ? new Date().toISOString() : null,
       };
       await tasksAPI.update(task.id, updatedTask);
       fetchTasks();
     } catch (err) {
       alert("Güncelleme hatası: " + err.message);
+    }
+  };
+
+  const handleUpdateStatus = async (task, newStatus) => {
+    try {
+      const updatedTask = {
+        ...task,
+        status: newStatus,
+        isCompleted: newStatus === "Tamamlandı",
+        completedDate: newStatus === "Tamamlandı" ? new Date().toISOString() : null,
+      };
+      await tasksAPI.update(task.id, updatedTask);
+      fetchTasks();
+    } catch (err) {
+      alert("Durum güncelleme hatası: " + err.message);
     }
   };
 
@@ -168,6 +182,7 @@ function TaskList() {
               onEdit={handleEdit}
               onDelete={handleDeleteClick}
               onToggleComplete={toggleComplete}
+              onUpdateStatus={handleUpdateStatus}
             />
           ))}
         </div>
