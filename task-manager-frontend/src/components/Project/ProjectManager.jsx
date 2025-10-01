@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
-import { projectsAPI } from '../../services/api';
+import { projectsAPI, categoriesAPI } from '../../services/api';
 import ConfirmDialog from '../ConfirmDialog';
 import ProjectDetailModal from './ProjectDetailModal';
 
 function ProjectManager() {
   const [projects, setProjects] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingProject, setEditingProject] = useState(null);
@@ -13,7 +14,9 @@ function ProjectManager() {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    color: '#6366f1'
+    color: '#6366f1',
+    deadline: '',
+    categoryId: ''
   });
 
   const colorOptions = [
@@ -28,6 +31,7 @@ function ProjectManager() {
 
   useEffect(() => {
     fetchProjects();
+    fetchCategories();
   }, []);
 
   const fetchProjects = async () => {
@@ -42,15 +46,30 @@ function ProjectManager() {
     }
   };
 
+  const fetchCategories = async () => {
+    try {
+      const response = await categoriesAPI.getAll();
+      setCategories(response.data);
+    } catch (err) {
+      console.error('Kategoriler yüklenemedi:', err);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      const projectData = {
+        ...formData,
+        deadline: formData.deadline || null,
+        categoryId: formData.categoryId ? parseInt(formData.categoryId) : null
+      };
+
       if (editingProject) {
-        await projectsAPI.update(editingProject.id, { ...formData, id: editingProject.id });
+        await projectsAPI.update(editingProject.id, { ...projectData, id: editingProject.id });
       } else {
-        await projectsAPI.create(formData);
+        await projectsAPI.create(projectData);
       }
-      setFormData({ name: '', description: '', color: '#6366f1' });
+      setFormData({ name: '', description: '', color: '#6366f1', deadline: '', categoryId: '' });
       setShowForm(false);
       setEditingProject(null);
       fetchProjects();
@@ -64,7 +83,9 @@ function ProjectManager() {
     setFormData({
       name: project.name,
       description: project.description || '',
-      color: project.color
+      color: project.color,
+      deadline: project.deadline ? project.deadline.split('T')[0] : '',
+      categoryId: project.categoryId || ''
     });
     setShowForm(true);
   };
@@ -90,7 +111,7 @@ function ProjectManager() {
   const handleCancel = () => {
     setShowForm(false);
     setEditingProject(null);
-    setFormData({ name: '', description: '', color: '#6366f1' });
+    setFormData({ name: '', description: '', color: '#6366f1', deadline: '', categoryId: '' });
   };
 
   if (loading) {
@@ -119,6 +140,36 @@ function ProjectManager() {
             {editingProject ? 'Projeyi Düzenle' : 'Yeni Proje Oluştur'}
           </h3>
           <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Kategori (Opsiyonel)
+              </label>
+              <select
+                value={formData.categoryId}
+                onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 bg-white dark:bg-gray-700 text-gray-800 dark:text-white"
+              >
+                <option value="">Kategori Seçin (Opsiyonel)</option>
+                {categories.map((cat) => (
+                  <option key={cat.id} value={cat.id}>
+                    {cat.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Son Teslim Tarihi
+              </label>
+              <input
+                type="date"
+                value={formData.deadline}
+                onChange={(e) => setFormData({ ...formData, deadline: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 bg-white dark:bg-gray-700 text-gray-800 dark:text-white"
+              />
+            </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Proje Adı *

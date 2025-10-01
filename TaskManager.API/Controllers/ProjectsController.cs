@@ -31,6 +31,7 @@ namespace TaskManager.API.Controllers
             var userId = GetUserId();
             var projects = await _context.Projects
                 .Include(p => p.Tasks)
+                .Include(p => p.Category)
                 .Where(p => p.UserId == userId && p.IsActive)
                 .ToListAsync();
 
@@ -44,6 +45,7 @@ namespace TaskManager.API.Controllers
             var userId = GetUserId();
             var project = await _context.Projects
                 .Include(p => p.Tasks)
+                .Include(p => p.Category)
                 .FirstOrDefaultAsync(p => p.Id == id && p.UserId == userId);
 
             if (project == null)

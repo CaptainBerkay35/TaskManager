@@ -55,11 +55,12 @@ namespace TaskManager.API.Data
                 .HasForeignKey(c => c.UserId)
                 .OnDelete(DeleteBehavior.SetNull);
 
+            // Project - Category ilişkisi
             modelBuilder.Entity<Project>()
-                .HasOne<User>()
+                .HasOne(p => p.Category)
                 .WithMany()
-                .HasForeignKey(p => p.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .HasForeignKey(p => p.CategoryId)
+                .OnDelete(DeleteBehavior.SetNull);
         }
     }
 }
