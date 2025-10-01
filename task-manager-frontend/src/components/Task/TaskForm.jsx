@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { tasksAPI, categoriesAPI } from '../../services/api';
 
 function TaskForm({ onClose, onSuccess, editTask = null }) {
@@ -12,6 +13,7 @@ function TaskForm({ onClose, onSuccess, editTask = null }) {
     dueDate: '',
   });
   const [loading, setLoading] = useState(false);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
 
   useEffect(() => {
     fetchCategories();
@@ -33,17 +35,26 @@ function TaskForm({ onClose, onSuccess, editTask = null }) {
       setCategories(response.data);
     } catch (err) {
       console.error('Kategoriler yüklenemedi:', err);
+    } finally {
+      setCategoriesLoading(false);
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Kategori seçilmemiş kontrolü
+    if (!formData.categoryId) {
+      alert('Lütfen bir kategori seçin!');
+      return;
+    }
+    
     setLoading(true);
 
     try {
       const taskData = {
         ...formData,
-        categoryId: formData.categoryId ? parseInt(formData.categoryId) : null,
+        categoryId: parseInt(formData.categoryId),
         dueDate: formData.dueDate || null,
       };
 
@@ -131,20 +142,43 @@ function TaskForm({ onClose, onSuccess, editTask = null }) {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Kategori
+                Kategori *
               </label>
               <select
                 value={formData.categoryId}
                 onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent bg-white dark:bg-gray-700 text-gray-800 dark:text-white"
+                required
+                disabled={categoriesLoading || categories.length === 0}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent bg-white dark:bg-gray-700 text-gray-800 dark:text-white disabled:bg-gray-100 dark:disabled:bg-gray-600 disabled:cursor-not-allowed"
               >
-                <option value="">Kategori Seçin</option>
+                <option value="">
+                  {categoriesLoading ? 'Yükleniyor...' : categories.length === 0 ? 'Kategori bulunamadı' : 'Kategori Seçin'}
+                </option>
                 {categories.map((cat) => (
                   <option key={cat.id} value={cat.id}>
                     {cat.name}
                   </option>
                 ))}
               </select>
+              
+              {!categoriesLoading && categories.length === 0 && (
+                <div className="mt-2 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+                  <p className="text-sm text-amber-800 dark:text-amber-200 mb-2">
+                    Görev eklemek için önce kategori oluşturmalısınız.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onClose();
+                      // Kategoriler sekmesine geçiş için parent component'e sinyal gönder
+                      window.dispatchEvent(new CustomEvent('switchToCategories'));
+                    }}
+                    className="text-sm text-amber-700 dark:text-amber-300 font-medium hover:text-amber-900 dark:hover:text-amber-100 underline"
+                  >
+                    Kategoriler sekmesine git →
+                  </button>
+                </div>
+              )}
             </div>
 
             <div>
@@ -162,8 +196,8 @@ function TaskForm({ onClose, onSuccess, editTask = null }) {
             <div className="flex gap-3 pt-4">
               <button
                 type="submit"
-                disabled={loading}
-                className="flex-1 bg-indigo-600 dark:bg-indigo-500 text-white py-2 rounded-lg hover:bg-indigo-700 dark:hover:bg-indigo-600 transition disabled:bg-gray-400 dark:disabled:bg-gray-600"
+                disabled={loading || categories.length === 0}
+                className="flex-1 bg-indigo-600 dark:bg-indigo-500 text-white py-2 rounded-lg hover:bg-indigo-700 dark:hover:bg-indigo-600 transition disabled:bg-gray-400 dark:disabled:bg-gray-600 disabled:cursor-not-allowed"
               >
                 {loading ? 'Kaydediliyor...' : editTask ? 'Güncelle' : 'Oluştur'}
               </button>

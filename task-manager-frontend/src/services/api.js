@@ -9,6 +9,33 @@ const api = axios.create({
   },
 });
 
+// REQUEST INTERCEPTOR - JWT Token ekle (EKLENEN KISIM!)
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// RESPONSE INTERCEPTOR - 401 hatalarını yakala
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      window.location.href = '/login';
+    }
+    return Promise.reject(error);
+  }
+);
+
 // Tasks API
 export const tasksAPI = {
   getAll: () => api.get('/tasks'),
@@ -29,10 +56,18 @@ export const categoriesAPI = {
 
 // SubTasks API
 export const subTasksAPI = {
-  getByTask: (taskId) => api.get(`/subtasks/ByTask/${taskId}`),
+  getByTask: (taskId) => api.get(`/subtasks/task/${taskId}`),
   create: (subTask) => api.post('/subtasks', subTask),
   update: (id, subTask) => api.put(`/subtasks/${id}`, subTask),
   delete: (id) => api.delete(`/subtasks/${id}`),
+  toggle: (id) => api.patch(`/subtasks/${id}/toggle`),
+};
+
+// Auth API
+export const authAPI = {
+  login: (username, password) => api.post('/auth/login', { username, password }),
+  register: (username, email, password, fullName) => 
+    api.post('/auth/register', { username, email, password, fullName }),
 };
 
 export default api;
