@@ -98,10 +98,12 @@ function TaskList() {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-800">Görevlerim</h2>
+        <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
+          Görevlerim
+        </h2>
         <button
           onClick={() => setShowForm(true)}
-          className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition"
+          className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 transition"
         >
           + Yeni Görev
         </button>
@@ -119,8 +121,10 @@ function TaskList() {
       />
 
       {tasks.length === 0 ? (
-        <div className="text-center py-12 bg-gray-50 rounded-lg">
-          <p className="text-gray-500">Henüz görev yok. Yeni görev ekleyin!</p>
+        <div className="text-center py-12 bg-gray-50 dark:bg-gray-800 rounded-lg">
+          <p className="text-gray-500 dark:text-gray-400">
+            Henüz görev yok. Yeni görev ekleyin!
+          </p>
         </div>
       ) : (
         <div className="grid gap-4">
