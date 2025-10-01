@@ -9,7 +9,7 @@ const api = axios.create({
   },
 });
 
-// REQUEST INTERCEPTOR - JWT Token ekle (EKLENEN KISIM!)
+// REQUEST INTERCEPTOR - JWT Token ekle
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
@@ -54,6 +54,15 @@ export const categoriesAPI = {
   delete: (id) => api.delete(`/categories/${id}`),
 };
 
+// Projects API
+export const projectsAPI = {
+  getAll: () => api.get('/projects'),
+  getById: (id) => api.get(`/projects/${id}`),
+  create: (project) => api.post('/projects', project),
+  update: (id, project) => api.put(`/projects/${id}`, project),
+  delete: (id) => api.delete(`/projects/${id}`),
+};
+
 // SubTasks API
 export const subTasksAPI = {
   getByTask: (taskId) => api.get(`/SubTasks/ByTask/${taskId}`),
@@ -62,7 +71,6 @@ export const subTasksAPI = {
   delete: (id) => api.delete(`/SubTasks/${id}`),
   toggle: (id) => api.patch(`/SubTasks/${id}/toggle`),
 };
-
 
 // Auth API
 export const authAPI = {
