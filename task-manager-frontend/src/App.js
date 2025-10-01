@@ -1,9 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import TaskList from './components/Task/TaskList';
 import CategoryManager from './components/Category/CategoryManager';
 import Dashboard from './components/Dashboard/Dashboard';
+import ProjectManager from './components/Project/ProjectManager';
+import ProjectSidebar from './components/Project/ProjectSidebar';
+import ProjectTaskView from './components/Project/ProjectTaskView';
 import ThemeToggle from './components/ThemeToggle';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -56,6 +59,8 @@ const PublicRoute = ({ children }) => {
 const AppContent = () => {
   const { user, logout } = useAuth();
   const [activeTab, setActiveTab] = useState('tasks');
+  const [selectedProjectId, setSelectedProjectId] = useState(null);
+  const [showProjectForm, setShowProjectForm] = useState(false);
 
   useEffect(() => {
     // TaskForm'dan gelen kategori sekmesine geçiş eventi
@@ -71,75 +76,126 @@ const AppContent = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 transition-colors">
-      <div className="container mx-auto px-4 py-8">
-        <header className="mb-8 flex justify-between items-start">
-          <div>
-            <h1 className="text-4xl font-bold text-gray-800 dark:text-white mb-2">
-              Görev Yönetim Sistemi
-            </h1>
-            <p className="text-gray-600 dark:text-gray-400">
-              Azure SQL + React ile görevlerinizi organize edin
-            </p>
-            {user && (
-              <p className="text-sm text-indigo-600 dark:text-indigo-400 mt-1">
-                Hoş geldin, {user.fullName || user.username}!
-              </p>
-            )}
-          </div>
-          <div className="flex items-center gap-3">
-            <ThemeToggle />
-            {user && (
-              <button
-                onClick={logout}
-                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition"
-              >
-                Çıkış Yap
-              </button>
-            )}
-          </div>
-        </header>
+      <div className="flex h-screen overflow-hidden">
+        {/* Sidebar - Sadece tasks sekmesinde görünür */}
+        {activeTab === 'tasks' && (
+          <ProjectSidebar
+            selectedProjectId={selectedProjectId}
+            onProjectSelect={setSelectedProjectId}
+            onCreateProject={() => setShowProjectForm(true)}
+          />
+        )}
 
-        <div className="mb-6">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-1 inline-flex gap-1">
-            <button
-              onClick={() => setActiveTab('dashboard')}
-              className={`px-6 py-2 rounded-lg font-medium transition ${
-                activeTab === 'dashboard'
-                  ? 'bg-indigo-600 text-white'
-                  : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
-              }`}
-            >
-              Dashboard
-            </button>
-            <button
-              onClick={() => setActiveTab('tasks')}
-              className={`px-6 py-2 rounded-lg font-medium transition ${
-                activeTab === 'tasks'
-                  ? 'bg-indigo-600 text-white'
-                  : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
-              }`}
-            >
-              Görevler
-            </button>
-            <button
-              onClick={() => setActiveTab('categories')}
-              className={`px-6 py-2 rounded-lg font-medium transition ${
-                activeTab === 'categories'
-                  ? 'bg-indigo-600 text-white'
-                  : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
-              }`}
-            >
-              Kategoriler
-            </button>
+        {/* Main Content */}
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4">
+            <div className="flex justify-between items-start">
+              <div>
+                <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
+                  Görev Yönetim Sistemi
+                </h1>
+                {user && (
+                  <p className="text-sm text-indigo-600 dark:text-indigo-400 mt-1">
+                    Hoş geldin, {user.fullName || user.username}!
+                  </p>
+                )}
+              </div>
+              <div className="flex items-center gap-3">
+                <ThemeToggle />
+                <button
+                  onClick={logout}
+                  className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition text-sm"
+                >
+                  Çıkış
+                </button>
+              </div>
+            </div>
+
+            {/* Tabs */}
+            <div className="mt-4">
+              <div className="bg-gray-100 dark:bg-gray-700 rounded-lg p-1 inline-flex gap-1">
+                <button
+                  onClick={() => setActiveTab('dashboard')}
+                  className={`px-4 py-2 rounded-lg font-medium transition text-sm ${
+                    activeTab === 'dashboard'
+                      ? 'bg-white dark:bg-gray-600 text-indigo-600 dark:text-indigo-400 shadow'
+                      : 'text-gray-600 dark:text-gray-300'
+                  }`}
+                >
+                  Dashboard
+                </button>
+                <button
+                  onClick={() => setActiveTab('tasks')}
+                  className={`px-4 py-2 rounded-lg font-medium transition text-sm ${
+                    activeTab === 'tasks'
+                      ? 'bg-white dark:bg-gray-600 text-indigo-600 dark:text-indigo-400 shadow'
+                      : 'text-gray-600 dark:text-gray-300'
+                  }`}
+                >
+                  Görevler
+                </button>
+                <button
+                  onClick={() => setActiveTab('projects')}
+                  className={`px-4 py-2 rounded-lg font-medium transition text-sm ${
+                    activeTab === 'projects'
+                      ? 'bg-white dark:bg-gray-600 text-indigo-600 dark:text-indigo-400 shadow'
+                      : 'text-gray-600 dark:text-gray-300'
+                  }`}
+                >
+                  Proje Yönetimi
+                </button>
+                <button
+                  onClick={() => setActiveTab('categories')}
+                  className={`px-4 py-2 rounded-lg font-medium transition text-sm ${
+                    activeTab === 'categories'
+                      ? 'bg-white dark:bg-gray-600 text-indigo-600 dark:text-indigo-400 shadow'
+                      : 'text-gray-600 dark:text-gray-300'
+                  }`}
+                >
+                  Kategoriler
+                </button>
+              </div>
+            </div>
+          </header>
+
+          {/* Content Area */}
+          <main className="flex-1 overflow-y-auto p-6">
+            {activeTab === 'dashboard' && <Dashboard />}
+            {activeTab === 'tasks' && <ProjectTaskView projectId={selectedProjectId} />}
+            {activeTab === 'projects' && <ProjectManager />}
+            {activeTab === 'categories' && <CategoryManager />}
+          </main>
+        </div>
+      </div>
+
+      {/* Project Form Modal */}
+      {showProjectForm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 max-w-md w-full">
+            <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-4">Yeni Proje</h3>
+            <p className="text-gray-600 dark:text-gray-400 mb-4">
+              Proje oluşturmak için "Proje Yönetimi" sekmesine gidin.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setActiveTab('projects');
+                  setShowProjectForm(false);
+                }}
+                className="flex-1 bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition"
+              >
+                Proje Yönetimine Git
+              </button>
+              <button
+                onClick={() => setShowProjectForm(false)}
+                className="flex-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 py-2 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition"
+              >
+                İptal
+              </button>
+            </div>
           </div>
         </div>
-        
-        <main>
-          {activeTab === 'dashboard' && <Dashboard />}
-          {activeTab === 'tasks' && <TaskList />}
-          {activeTab === 'categories' && <CategoryManager />}
-        </main>
-      </div>
+      )}
     </div>
   );
 };

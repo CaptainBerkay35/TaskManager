@@ -1,15 +1,16 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { tasksAPI, categoriesAPI } from '../../services/api';
+import { tasksAPI, categoriesAPI, projectsAPI } from '../../services/api';
 
 function TaskForm({ onClose, onSuccess, editTask = null }) {
   const [categories, setCategories] = useState([]);
+  const [projects, setProjects] = useState([]);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
     priority: 1,
     status: 'Devam Ediyor',
     categoryId: '',
+    projectId: '',
     dueDate: '',
   });
   const [loading, setLoading] = useState(false);
@@ -17,6 +18,7 @@ function TaskForm({ onClose, onSuccess, editTask = null }) {
 
   useEffect(() => {
     fetchCategories();
+    fetchProjects();
     if (editTask) {
       setFormData({
         title: editTask.title,
@@ -24,6 +26,7 @@ function TaskForm({ onClose, onSuccess, editTask = null }) {
         priority: editTask.priority,
         status: editTask.status,
         categoryId: editTask.categoryId || '',
+        projectId: editTask.projectId || '',
         dueDate: editTask.dueDate ? editTask.dueDate.split('T')[0] : '',
       });
     }
@@ -37,6 +40,15 @@ function TaskForm({ onClose, onSuccess, editTask = null }) {
       console.error('Kategoriler yüklenemedi:', err);
     } finally {
       setCategoriesLoading(false);
+    }
+  };
+
+  const fetchProjects = async () => {
+    try {
+      const response = await projectsAPI.getAll();
+      setProjects(response.data);
+    } catch (err) {
+      console.error('Projeler yüklenemedi:', err);
     }
   };
 
@@ -55,6 +67,7 @@ function TaskForm({ onClose, onSuccess, editTask = null }) {
       const taskData = {
         ...formData,
         categoryId: parseInt(formData.categoryId),
+        projectId: formData.projectId ? parseInt(formData.projectId) : null,
         dueDate: formData.dueDate || null,
       };
 
@@ -127,16 +140,19 @@ function TaskForm({ onClose, onSuccess, editTask = null }) {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Durum
+                Proje (Opsiyonel)
               </label>
               <select
-                value={formData.status}
-                onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                value={formData.projectId}
+                onChange={(e) => setFormData({ ...formData, projectId: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent bg-white dark:bg-gray-700 text-gray-800 dark:text-white"
               >
-                <option value="Bekliyor">Bekliyor</option>
-                <option value="Devam Ediyor">Devam Ediyor</option>
-                <option value="Tamamlandı">Tamamlandı</option>
+                <option value="">Proje Seçin (Opsiyonel)</option>
+                {projects.map((project) => (
+                  <option key={project.id} value={project.id}>
+                    {project.name}
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -170,7 +186,6 @@ function TaskForm({ onClose, onSuccess, editTask = null }) {
                     type="button"
                     onClick={() => {
                       onClose();
-                      // Kategoriler sekmesine geçiş için parent component'e sinyal gönder
                       window.dispatchEvent(new CustomEvent('switchToCategories'));
                     }}
                     className="text-sm text-amber-700 dark:text-amber-300 font-medium hover:text-amber-900 dark:hover:text-amber-100 underline"
