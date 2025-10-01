@@ -30,7 +30,7 @@ namespace TaskManager.API.Controllers
         {
             var userId = GetUserId();
             var categories = await _context.Categories
-                .Include(c => c.Tasks)
+                // .Include(c => c.Tasks) KALDIRILDI - Artık Tasks navigation property yok
                 .Where(c => c.UserId == userId)
                 .ToListAsync();
 
@@ -43,7 +43,7 @@ namespace TaskManager.API.Controllers
         {
             var userId = GetUserId();
             var category = await _context.Categories
-                .Include(c => c.Tasks)
+                // .Include(c => c.Tasks) KALDIRILDI - Artık Tasks navigation property yok
                 .FirstOrDefaultAsync(c => c.Id == id && c.UserId == userId);
 
             if (category == null)
@@ -112,6 +112,14 @@ namespace TaskManager.API.Controllers
             if (category == null || category.UserId != userId)
             {
                 return NotFound();
+            }
+
+            // Önce bu kategoriye bağlı proje var mı kontrol et
+            var hasProjects = await _context.Projects.AnyAsync(p => p.CategoryId == id);
+
+            if (hasProjects)
+            {
+                return BadRequest("Bu kategoriye bağlı projeler var. Önce projeleri silin veya başka kategoriye taşıyın.");
             }
 
             _context.Categories.Remove(category);

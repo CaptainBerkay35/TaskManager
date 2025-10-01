@@ -30,7 +30,7 @@ namespace TaskManager.API.Controllers
         {
             var userId = GetUserId();
             var tasks = await _context.Tasks
-                .Include(t => t.Category)
+                .Include(t => t.Project) // Project bilgisini dahil et
                 .Where(t => t.UserId == userId)
                 .ToListAsync();
 
@@ -43,7 +43,7 @@ namespace TaskManager.API.Controllers
         {
             var userId = GetUserId();
             var task = await _context.Tasks
-                .Include(t => t.Category)
+                .Include(t => t.Project)
                 .FirstOrDefaultAsync(t => t.Id == id && t.UserId == userId);
 
             if (task == null)
@@ -58,7 +58,22 @@ namespace TaskManager.API.Controllers
         [HttpPost]
         public async Task<ActionResult<TaskItem>> CreateTask(TaskItem taskItem)
         {
-            taskItem.UserId = GetUserId();
+            var userId = GetUserId();
+
+            // ProjectId kontrolü - ZORUNLU
+            if (taskItem.ProjectId == 0)
+            {
+                return BadRequest("Proje seçimi zorunludur.");
+            }
+
+            // Seçilen projenin kullanıcıya ait olup olmadığını kontrol et
+            var project = await _context.Projects.FindAsync(taskItem.ProjectId);
+            if (project == null || project.UserId != userId)
+            {
+                return BadRequest("Geçersiz proje seçimi.");
+            }
+
+            taskItem.UserId = userId;
             _context.Tasks.Add(taskItem);
             await _context.SaveChangesAsync();
 
@@ -80,6 +95,19 @@ namespace TaskManager.API.Controllers
             if (existingTask == null || existingTask.UserId != userId)
             {
                 return NotFound();
+            }
+
+            // ProjectId kontrolü - ZORUNLU
+            if (taskItem.ProjectId == 0)
+            {
+                return BadRequest("Proje seçimi zorunludur.");
+            }
+
+            // Yeni projenin de kullanıcıya ait olup olmadığını kontrol et
+            var project = await _context.Projects.FindAsync(taskItem.ProjectId);
+            if (project == null || project.UserId != userId)
+            {
+                return BadRequest("Geçersiz proje seçimi.");
             }
 
             // UserId değişmesin

@@ -7,7 +7,7 @@
         public string? Color { get; set; }
         public DateTime CreatedDate { get; set; } = DateTime.Now;
         public int? UserId { get; set; }
-        // Navigation Property
-        public ICollection<TaskItem>? Tasks { get; set; }
+
+      
     }
 }
