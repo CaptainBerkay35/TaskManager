@@ -8,7 +8,7 @@ function TaskForm({ onClose, onSuccess, editTask = null }) {
     title: '',
     description: '',
     priority: 1,
-    status: 'Bekliyor',
+    status: 'Devam Ediyor',
     categoryId: '',
     dueDate: '',
   });
