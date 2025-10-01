@@ -12,6 +12,7 @@
         public DateTime CreatedDate { get; set; } = DateTime.Now;
         public DateTime? DueDate { get; set; }
         public DateTime? CompletedDate { get; set; }
+        public int? UserId { get; set; }
 
         // Navigation Property
         public Category? Category { get; set; }

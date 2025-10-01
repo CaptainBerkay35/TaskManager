@@ -1,10 +1,13 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 using TaskManager.API.Data;
 using TaskManager.API.Models;
 
 namespace TaskManager.API.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class SubTasksController : ControllerBase
@@ -16,10 +19,24 @@ namespace TaskManager.API.Controllers
             _context = context;
         }
 
-        // GET: api/SubTasks/ByTask/5
+        private int GetUserId()
+        {
+            return int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+        }
+
+        // GET: api/SubTasks/ByTask/5 - Sadece kendi görevinin alt görevleri
         [HttpGet("ByTask/{taskId}")]
         public async Task<ActionResult<IEnumerable<SubTask>>> GetSubTasksByTask(int taskId)
         {
+            var userId = GetUserId();
+
+            // Önce task'ın kendisine ait olup olmadığını kontrol et
+            var task = await _context.Tasks.FindAsync(taskId);
+            if (task == null || task.UserId != userId)
+            {
+                return NotFound();
+            }
+
             var subTasks = await _context.SubTasks
                 .Where(st => st.TaskId == taskId)
                 .OrderBy(st => st.IsCompleted)
@@ -33,6 +50,15 @@ namespace TaskManager.API.Controllers
         [HttpPost]
         public async Task<ActionResult<SubTask>> CreateSubTask(SubTask subTask)
         {
+            var userId = GetUserId();
+
+            // Task'ın kullanıcıya ait olup olmadığını kontrol et
+            var task = await _context.Tasks.FindAsync(subTask.TaskId);
+            if (task == null || task.UserId != userId)
+            {
+                return BadRequest("Bu göreve alt görev ekleyemezsiniz.");
+            }
+
             _context.SubTasks.Add(subTask);
             await _context.SaveChangesAsync();
 
@@ -48,6 +74,17 @@ namespace TaskManager.API.Controllers
                 return BadRequest();
             }
 
+            var userId = GetUserId();
+            var existingSubTask = await _context.SubTasks
+                .Include(st => st.Task)
+                .FirstOrDefaultAsync(st => st.Id == id);
+
+            if (existingSubTask == null || existingSubTask.Task?.UserId != userId)
+            {
+                return NotFound();
+            }
+
+            _context.Entry(existingSubTask).State = EntityState.Detached;
             _context.Entry(subTask).State = EntityState.Modified;
 
             try
@@ -70,8 +107,12 @@ namespace TaskManager.API.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteSubTask(int id)
         {
-            var subTask = await _context.SubTasks.FindAsync(id);
-            if (subTask == null)
+            var userId = GetUserId();
+            var subTask = await _context.SubTasks
+                .Include(st => st.Task)
+                .FirstOrDefaultAsync(st => st.Id == id);
+
+            if (subTask == null || subTask.Task?.UserId != userId)
             {
                 return NotFound();
             }

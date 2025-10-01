@@ -1,10 +1,13 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 using TaskManager.API.Data;
 using TaskManager.API.Models;
 
 namespace TaskManager.API.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class TasksController : ControllerBase
@@ -16,24 +19,32 @@ namespace TaskManager.API.Controllers
             _context = context;
         }
 
-        // GET: api/Tasks
+        private int GetUserId()
+        {
+            return int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+        }
+
+        // GET: api/Tasks - Sadece kullanıcının kendi görevleri
         [HttpGet]
         public async Task<ActionResult<IEnumerable<TaskItem>>> GetTasks()
         {
+            var userId = GetUserId();
             var tasks = await _context.Tasks
-                .Include(t => t.Category) // Kategori bilgisini de getir
+                .Include(t => t.Category)
+                .Where(t => t.UserId == userId)
                 .ToListAsync();
 
             return Ok(tasks);
         }
 
-        // GET: api/Tasks/5
+        // GET: api/Tasks/5 - Sadece kendi görevi
         [HttpGet("{id}")]
         public async Task<ActionResult<TaskItem>> GetTask(int id)
         {
+            var userId = GetUserId();
             var task = await _context.Tasks
                 .Include(t => t.Category)
-                .FirstOrDefaultAsync(t => t.Id == id);
+                .FirstOrDefaultAsync(t => t.Id == id && t.UserId == userId);
 
             if (task == null)
             {
@@ -43,17 +54,18 @@ namespace TaskManager.API.Controllers
             return Ok(task);
         }
 
-        // POST: api/Tasks
+        // POST: api/Tasks - UserId otomatik eklenir
         [HttpPost]
         public async Task<ActionResult<TaskItem>> CreateTask(TaskItem taskItem)
         {
+            taskItem.UserId = GetUserId();
             _context.Tasks.Add(taskItem);
             await _context.SaveChangesAsync();
 
             return CreatedAtAction(nameof(GetTask), new { id = taskItem.Id }, taskItem);
         }
 
-        // PUT: api/Tasks/5
+        // PUT: api/Tasks/5 - Sadece kendi görevini güncelleyebilir
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateTask(int id, TaskItem taskItem)
         {
@@ -62,6 +74,17 @@ namespace TaskManager.API.Controllers
                 return BadRequest();
             }
 
+            var userId = GetUserId();
+            var existingTask = await _context.Tasks.FindAsync(id);
+
+            if (existingTask == null || existingTask.UserId != userId)
+            {
+                return NotFound();
+            }
+
+            // UserId değişmesin
+            taskItem.UserId = userId;
+            _context.Entry(existingTask).State = EntityState.Detached;
             _context.Entry(taskItem).State = EntityState.Modified;
 
             try
@@ -80,12 +103,14 @@ namespace TaskManager.API.Controllers
             return NoContent();
         }
 
-        // DELETE: api/Tasks/5
+        // DELETE: api/Tasks/5 - Sadece kendi görevini silebilir
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteTask(int id)
         {
+            var userId = GetUserId();
             var task = await _context.Tasks.FindAsync(id);
-            if (task == null)
+
+            if (task == null || task.UserId != userId)
             {
                 return NotFound();
             }

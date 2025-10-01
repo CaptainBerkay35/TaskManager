@@ -1,10 +1,13 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 using TaskManager.API.Data;
 using TaskManager.API.Models;
 
 namespace TaskManager.API.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class CategoriesController : ControllerBase
@@ -16,24 +19,32 @@ namespace TaskManager.API.Controllers
             _context = context;
         }
 
-        // GET: api/Categories
+        private int GetUserId()
+        {
+            return int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+        }
+
+        // GET: api/Categories - Sadece kullanıcının kendi kategorileri
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Category>>> GetCategories()
         {
+            var userId = GetUserId();
             var categories = await _context.Categories
-                .Include(c => c.Tasks) // Kategoriye ait görevleri de getir
+                .Include(c => c.Tasks)
+                .Where(c => c.UserId == userId)
                 .ToListAsync();
 
             return Ok(categories);
         }
 
-        // GET: api/Categories/5
+        // GET: api/Categories/5 - Sadece kendi kategorisi
         [HttpGet("{id}")]
         public async Task<ActionResult<Category>> GetCategory(int id)
         {
+            var userId = GetUserId();
             var category = await _context.Categories
                 .Include(c => c.Tasks)
-                .FirstOrDefaultAsync(c => c.Id == id);
+                .FirstOrDefaultAsync(c => c.Id == id && c.UserId == userId);
 
             if (category == null)
             {
@@ -43,17 +54,18 @@ namespace TaskManager.API.Controllers
             return Ok(category);
         }
 
-        // POST: api/Categories
+        // POST: api/Categories - UserId otomatik eklenir
         [HttpPost]
         public async Task<ActionResult<Category>> CreateCategory(Category category)
         {
+            category.UserId = GetUserId();
             _context.Categories.Add(category);
             await _context.SaveChangesAsync();
 
             return CreatedAtAction(nameof(GetCategory), new { id = category.Id }, category);
         }
 
-        // PUT: api/Categories/5
+        // PUT: api/Categories/5 - Sadece kendi kategorisini güncelleyebilir
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateCategory(int id, Category category)
         {
@@ -62,6 +74,16 @@ namespace TaskManager.API.Controllers
                 return BadRequest();
             }
 
+            var userId = GetUserId();
+            var existingCategory = await _context.Categories.FindAsync(id);
+
+            if (existingCategory == null || existingCategory.UserId != userId)
+            {
+                return NotFound();
+            }
+
+            category.UserId = userId;
+            _context.Entry(existingCategory).State = EntityState.Detached;
             _context.Entry(category).State = EntityState.Modified;
 
             try
@@ -80,12 +102,14 @@ namespace TaskManager.API.Controllers
             return NoContent();
         }
 
-        // DELETE: api/Categories/5
+        // DELETE: api/Categories/5 - Sadece kendi kategorisini silebilir
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteCategory(int id)
         {
+            var userId = GetUserId();
             var category = await _context.Categories.FindAsync(id);
-            if (category == null)
+
+            if (category == null || category.UserId != userId)
             {
                 return NotFound();
             }
