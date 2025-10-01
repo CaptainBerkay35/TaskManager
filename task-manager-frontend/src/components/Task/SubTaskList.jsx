@@ -70,10 +70,10 @@ function SubTaskList({ taskId }) {
 
   const getPriorityColor = (priority) => {
     switch (priority) {
-      case 4: return 'text-red-600';
-      case 3: return 'text-orange-600';
-      case 2: return 'text-yellow-600';
-      default: return 'text-green-600';
+      case 4: return 'text-red-600 dark:text-red-400';
+      case 3: return 'text-orange-600 dark:text-orange-400';
+      case 2: return 'text-yellow-600 dark:text-yellow-400';
+      default: return 'text-green-600 dark:text-green-400';
     }
   };
 
@@ -105,43 +105,43 @@ function SubTaskList({ taskId }) {
   const progress = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
 
   return (
-    <div className="mt-4 border-t pt-4">
+    <div className="mt-4 border-t border-gray-200 dark:border-gray-600 pt-4">
       <div className="flex justify-between items-center mb-3">
-        <h4 className="text-sm font-semibold text-gray-700">
+        <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
           Alt Görevler ({completedCount}/{totalCount})
         </h4>
         <button
           onClick={() => setShowForm(!showForm)}
-          className="text-xs text-indigo-600 hover:text-indigo-800 font-medium"
+          className="text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 font-medium"
         >
           {showForm ? 'İptal' : '+ Ekle'}
         </button>
       </div>
 
       {totalCount > 0 && (
-        <div className="w-full bg-gray-200 rounded-full h-1.5 mb-3">
+        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5 mb-3">
           <div 
-            className="bg-indigo-600 h-1.5 rounded-full transition-all"
+            className="bg-indigo-600 dark:bg-indigo-500 h-1.5 rounded-full transition-all"
             style={{ width: `${progress}%` }}
           />
         </div>
       )}
 
       {showForm && (
-        <form onSubmit={handleAdd} className="bg-gray-50 p-3 rounded-lg mb-3 space-y-2">
+        <form onSubmit={handleAdd} className="bg-gray-50 dark:bg-gray-700 p-3 rounded-lg mb-3 space-y-2">
           <input
             type="text"
             value={formData.title}
             onChange={(e) => setFormData({ ...formData, title: e.target.value })}
             placeholder="Alt görev başlığı"
-            className="w-full text-sm px-3 py-1.5 border border-gray-300 rounded focus:ring-2 focus:ring-indigo-500"
+            className="w-full text-sm px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 bg-white dark:bg-gray-600 text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-400"
             required
           />
           <div className="grid grid-cols-2 gap-2">
             <select
               value={formData.priority}
               onChange={(e) => setFormData({ ...formData, priority: parseInt(e.target.value) })}
-              className="text-sm px-3 py-1.5 border border-gray-300 rounded focus:ring-2 focus:ring-indigo-500"
+              className="text-sm px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 bg-white dark:bg-gray-600 text-gray-800 dark:text-white"
             >
               <option value={1}>Düşük</option>
               <option value={2}>Orta</option>
@@ -152,13 +152,13 @@ function SubTaskList({ taskId }) {
               type="date"
               value={formData.dueDate}
               onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
-              className="text-sm px-3 py-1.5 border border-gray-300 rounded focus:ring-2 focus:ring-indigo-500"
+              className="text-sm px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 bg-white dark:bg-gray-600 text-gray-800 dark:text-white"
             />
           </div>
           <button
             type="submit"
             disabled={loading}
-            className="w-full text-sm bg-indigo-600 text-white px-3 py-1.5 rounded hover:bg-indigo-700 transition"
+            className="w-full text-sm bg-indigo-600 dark:bg-indigo-500 text-white px-3 py-1.5 rounded hover:bg-indigo-700 dark:hover:bg-indigo-600 transition disabled:bg-gray-400 dark:disabled:bg-gray-600"
           >
             {loading ? 'Ekleniyor...' : 'Ekle'}
           </button>
@@ -170,17 +170,23 @@ function SubTaskList({ taskId }) {
           <div
             key={subTask.id}
             className={`flex items-start gap-2 text-sm p-2 rounded group ${
-              subTask.isCompleted ? 'bg-gray-50' : 'bg-white border border-gray-200'
+              subTask.isCompleted 
+                ? 'bg-gray-50 dark:bg-gray-700/50' 
+                : 'bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600'
             }`}
           >
             <input
               type="checkbox"
               checked={subTask.isCompleted}
               onChange={() => handleToggle(subTask)}
-              className="mt-1 w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500"
+              className="mt-1 w-4 h-4 text-indigo-600 dark:text-indigo-500 rounded focus:ring-indigo-500 dark:focus:ring-indigo-400"
             />
             <div className="flex-1">
-              <div className={`${subTask.isCompleted ? 'line-through text-gray-400' : 'text-gray-700'}`}>
+              <div className={`${
+                subTask.isCompleted 
+                  ? 'line-through text-gray-400 dark:text-gray-500' 
+                  : 'text-gray-700 dark:text-gray-200'
+              }`}>
                 {subTask.title}
               </div>
               <div className="flex gap-2 mt-1 flex-wrap">
@@ -190,8 +196,8 @@ function SubTaskList({ taskId }) {
                 {subTask.dueDate && (
                   <span className={`text-xs ${
                     isOverdue(subTask.dueDate) && !subTask.isCompleted
-                      ? 'text-red-600 font-medium'
-                      : 'text-gray-500'
+                      ? 'text-red-600 dark:text-red-400 font-medium'
+                      : 'text-gray-500 dark:text-gray-400'
                   }`}>
                     {!subTask.isCompleted && getDaysRemaining(subTask.dueDate) + ': '}
                     {new Date(subTask.dueDate).toLocaleDateString('tr-TR')}
@@ -201,7 +207,7 @@ function SubTaskList({ taskId }) {
             </div>
             <button
               onClick={() => handleDelete(subTask.id)}
-              className="opacity-0 group-hover:opacity-100 text-red-500 hover:text-red-700 transition"
+              className="opacity-0 group-hover:opacity-100 text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

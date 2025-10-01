@@ -56,12 +56,13 @@ export const categoriesAPI = {
 
 // SubTasks API
 export const subTasksAPI = {
-  getByTask: (taskId) => api.get(`/subtasks/task/${taskId}`),
-  create: (subTask) => api.post('/subtasks', subTask),
-  update: (id, subTask) => api.put(`/subtasks/${id}`, subTask),
-  delete: (id) => api.delete(`/subtasks/${id}`),
-  toggle: (id) => api.patch(`/subtasks/${id}/toggle`),
+  getByTask: (taskId) => api.get(`/SubTasks/ByTask/${taskId}`),
+  create: (subTask) => api.post('/SubTasks', subTask),
+  update: (id, subTask) => api.put(`/SubTasks/${id}`, subTask),
+  delete: (id) => api.delete(`/SubTasks/${id}`),
+  toggle: (id) => api.patch(`/SubTasks/${id}/toggle`),
 };
+
 
 // Auth API
 export const authAPI = {

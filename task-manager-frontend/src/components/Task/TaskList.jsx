@@ -3,6 +3,7 @@ import { tasksAPI } from "../../services/api";
 import TaskForm from "./TaskForm";
 import TaskCard from "./TaskCard";
 import TaskFilters from "./TaskFilters";
+import ConfirmDialog from "../ConfirmDialog";
 
 function TaskList() {
   const [tasks, setTasks] = useState([]);
@@ -14,6 +15,7 @@ function TaskList() {
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterPriority, setFilterPriority] = useState("all");
   const [filterCategory, setFilterCategory] = useState("all");
+  const [deleteConfirm, setDeleteConfirm] = useState({ show: false, taskId: null, taskTitle: "" });
 
   useEffect(() => {
     fetchTasks();
@@ -37,16 +39,28 @@ function TaskList() {
     setShowForm(true);
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm("Bu görevi silmek istediğinizden emin misiniz?")) {
-      return;
-    }
+  const handleDeleteClick = (task) => {
+    console.log("task",task.title);
+    setDeleteConfirm({
+      show: true,
+      taskId: task.id,
+      taskTitle: task.title
+    });
+  };
+
+  const handleDeleteConfirm = async () => {
     try {
-      await tasksAPI.delete(id);
+      await tasksAPI.delete(deleteConfirm.taskId);
+      setDeleteConfirm({ show: false, taskId: null, taskTitle: "" });
       fetchTasks();
     } catch (err) {
       alert("Silme hatası: " + err.message);
+      setDeleteConfirm({ show: false, taskId: null, taskTitle: "" });
     }
+  };
+
+  const handleDeleteCancel = () => {
+    setDeleteConfirm({ show: false, taskId: null, taskTitle: "" });
   };
 
   const toggleComplete = async (task) => {
@@ -82,14 +96,14 @@ function TaskList() {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 dark:border-indigo-400"></div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+      <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-3 rounded-lg">
         {error}
       </div>
     );
@@ -121,9 +135,28 @@ function TaskList() {
       />
 
       {tasks.length === 0 ? (
+        <div className="text-center py-16 bg-gray-50 dark:bg-gray-800 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600">
+          <svg 
+            className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500 mb-4" 
+            fill="none" 
+            viewBox="0 0 24 24" 
+            stroke="currentColor"
+          >
+            <path 
+              strokeLinecap="round" 
+              strokeLinejoin="round" 
+              strokeWidth={2} 
+              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" 
+            />
+          </svg>
+          <p className="text-gray-500 dark:text-gray-400 font-medium">
+            Henüz görev yok. Yeni görev ekleyin!
+          </p>
+        </div>
+      ) : filteredTasks.length === 0 ? (
         <div className="text-center py-12 bg-gray-50 dark:bg-gray-800 rounded-lg">
           <p className="text-gray-500 dark:text-gray-400">
-            Henüz görev yok. Yeni görev ekleyin!
+            Filtrelere uygun görev bulunamadı.
           </p>
         </div>
       ) : (
@@ -133,7 +166,7 @@ function TaskList() {
               key={task.id}
               task={task}
               onEdit={handleEdit}
-              onDelete={handleDelete}
+              onDelete={handleDeleteClick}
               onToggleComplete={toggleComplete}
             />
           ))}
@@ -150,6 +183,16 @@ function TaskList() {
           editTask={editingTask}
         />
       )}
+
+      <ConfirmDialog
+        isOpen={deleteConfirm.show}
+        title="Görevi Sil"
+        message={`"${deleteConfirm.taskTitle}" görevini silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.`}
+        confirmText="Sil"
+        cancelText="İptal"
+        onConfirm={handleDeleteConfirm}
+        onCancel={handleDeleteCancel}
+      />
     </div>
   );
 }

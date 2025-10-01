@@ -123,6 +123,24 @@ namespace TaskManager.API.Controllers
             return NoContent();
         }
 
+        [HttpPatch("{id}/toggle")]
+        public async Task<IActionResult> ToggleSubTask(int id)
+        {
+            var userId = GetUserId();
+            var subTask = await _context.SubTasks
+                .Include(st => st.Task)
+                .FirstOrDefaultAsync(st => st.Id == id);
+
+            if (subTask == null || subTask.Task?.UserId != userId)
+            {
+                return NotFound();
+            }
+
+            subTask.IsCompleted = !subTask.IsCompleted;
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
         private async Task<bool> SubTaskExists(int id)
         {
             return await _context.SubTasks.AnyAsync(e => e.Id == id);
