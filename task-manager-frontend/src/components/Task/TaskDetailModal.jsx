@@ -1,8 +1,27 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import SubTaskList from './SubTaskList';
+import { subTasksAPI } from '../../services/api';
 
-function TaskDetailModal({ task, onClose,  }) {
+function TaskDetailModal({ task, onClose }) {
   const [activeTab, setActiveTab] = useState('details');
+  const [subTasks, setSubTasks] = useState([]);
+  const [subTasksLoading, setSubTasksLoading] = useState(true);
+
+  useEffect(() => {
+    fetchSubTasks();
+  }, [task.id]);
+
+  const fetchSubTasks = async () => {
+    try {
+      setSubTasksLoading(true);
+      const response = await subTasksAPI.getByTask(task.id);
+      setSubTasks(response.data);
+    } catch (err) {
+      console.error('Alt görevler yüklenemedi:', err);
+    } finally {
+      setSubTasksLoading(false);
+    }
+  };
 
   const getPriorityColor = (priority) => {
     switch (priority) {
@@ -35,6 +54,10 @@ function TaskDetailModal({ task, onClose,  }) {
     return new Date(task.dueDate) < new Date();
   };
 
+  // Alt görev istatistikleri
+  const completedSubTasks = subTasks.filter(st => st.isCompleted).length;
+  const totalSubTasks = subTasks.length;
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl dark:shadow-gray-900/50 max-w-3xl w-full max-h-[90vh] overflow-hidden">
@@ -50,12 +73,13 @@ function TaskDetailModal({ task, onClose,  }) {
                 <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(task.status)} bg-opacity-90`}>
                   {task.status}
                 </span>
-                {task.category && (
+                {/* PROJECT göster, CATEGORY kaldırıldı */}
+                {task.project && (
                   <span 
                     className="px-3 py-1 rounded-full text-sm font-medium text-white"
-                    style={{ backgroundColor: task.category.color }}
+                    style={{ backgroundColor: task.project.color }}
                   >
-                    {task.category.name}
+                    📁 {task.project.name}
                   </span>
                 )}
               </div>
@@ -86,13 +110,26 @@ function TaskDetailModal({ task, onClose,  }) {
             </button>
             <button
               onClick={() => setActiveTab('subtasks')}
-              className={`px-6 py-3 font-medium transition ${
+              className={`px-6 py-3 font-medium transition relative ${
                 activeTab === 'subtasks'
                   ? 'text-indigo-600 dark:text-indigo-400 border-b-2 border-indigo-600 dark:border-indigo-400'
                   : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
               }`}
             >
-              Alt Görevler
+              <span className="flex items-center gap-2">
+                Alt Görevler
+                {!subTasksLoading && totalSubTasks > 0 && (
+                  <span className={`
+                    px-2 py-0.5 text-xs font-semibold rounded-full
+                    ${activeTab === 'subtasks'
+                      ? 'bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300'
+                      : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
+                    }
+                  `}>
+                    {completedSubTasks}/{totalSubTasks}
+                  </span>
+                )}
+              </span>
             </button>
           </div>
         </div>
@@ -168,12 +205,32 @@ function TaskDetailModal({ task, onClose,  }) {
                   <p className="text-gray-800 dark:text-gray-200">{getPriorityText(task.priority)}</p>
                 </div>
               </div>
+
+              {/* Alt Görev Özeti */}
+              {totalSubTasks > 0 && (
+                <div className="bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800 p-4 rounded-lg">
+                  <h3 className="text-sm font-semibold text-indigo-700 dark:text-indigo-300 mb-2">Alt Görev İlerlemesi</h3>
+                  <div className="flex items-center gap-3">
+                    <div className="flex-1">
+                      <div className="w-full bg-indigo-200 dark:bg-indigo-900 rounded-full h-2">
+                        <div
+                          className="bg-indigo-600 dark:bg-indigo-400 h-2 rounded-full transition-all"
+                          style={{ width: `${totalSubTasks > 0 ? (completedSubTasks / totalSubTasks) * 100 : 0}%` }}
+                        />
+                      </div>
+                    </div>
+                    <span className="text-sm font-medium text-indigo-700 dark:text-indigo-300">
+                      {completedSubTasks}/{totalSubTasks}
+                    </span>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
           {activeTab === 'subtasks' && (
             <div>
-              <SubTaskList taskId={task.id} />
+              <SubTaskList taskId={task.id} onUpdate={fetchSubTasks} />
             </div>
           )}
         </div>

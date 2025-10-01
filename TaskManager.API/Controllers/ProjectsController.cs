@@ -106,24 +106,37 @@ namespace TaskManager.API.Controllers
             return NoContent();
         }
 
-        // DELETE: api/Projects/5 (Soft delete)
+        // ✅ YENİ KOD (ProjectsController.cs içinde):
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteProject(int id)
         {
             var userId = GetUserId();
-            var project = await _context.Projects.FindAsync(id);
 
-            if (project == null || project.UserId != userId)
+            // Projeyi ve task sayısını yükle
+            var project = await _context.Projects
+                .Include(p => p.Tasks)  // 👈 Task'leri de yükle
+                .FirstOrDefaultAsync(p => p.Id == id && p.UserId == userId);
+
+            if (project == null)
             {
                 return NotFound();
             }
 
-            project.IsActive = false;
+            // Bilgilendirme için task sayısını al
+            var taskCount = project.Tasks?.Count ?? 0;
+
+            // ✅ HARD DELETE - Gerçekten sil (CASCADE ile task'ler de silinir)
+            _context.Projects.Remove(project);
             await _context.SaveChangesAsync();
 
-            return NoContent();
+            // Başarı mesajı ile birlikte silinen task sayısını dön
+            return Ok(new
+            {
+                message = "Proje başarıyla silindi.",
+                deletedTasksCount = taskCount,
+                projectName = project.Name
+            });
         }
-
         private async Task<bool> ProjectExists(int id)
         {
             return await _context.Projects.AnyAsync(e => e.Id == id);

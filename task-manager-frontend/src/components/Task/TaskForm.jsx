@@ -1,23 +1,20 @@
 import { useState, useEffect } from 'react';
-import { tasksAPI, categoriesAPI, projectsAPI } from '../../services/api';
+import { tasksAPI, projectsAPI } from '../../services/api';
 
 function TaskForm({ onClose, onSuccess, editTask = null }) {
-  const [categories, setCategories] = useState([]);
   const [projects, setProjects] = useState([]);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
     priority: 1,
     status: 'Devam Ediyor',
-    categoryId: '',
-    projectId: '',
+    projectId: '', // ProjectId artık ZORUNLU
     dueDate: '',
   });
   const [loading, setLoading] = useState(false);
-  const [categoriesLoading, setCategoriesLoading] = useState(true);
+  const [projectsLoading, setProjectsLoading] = useState(true);
 
   useEffect(() => {
-    fetchCategories();
     fetchProjects();
     if (editTask) {
       setFormData({
@@ -25,23 +22,11 @@ function TaskForm({ onClose, onSuccess, editTask = null }) {
         description: editTask.description || '',
         priority: editTask.priority,
         status: editTask.status,
-        categoryId: editTask.categoryId || '',
         projectId: editTask.projectId || '',
         dueDate: editTask.dueDate ? editTask.dueDate.split('T')[0] : '',
       });
     }
   }, [editTask]);
-
-  const fetchCategories = async () => {
-    try {
-      const response = await categoriesAPI.getAll();
-      setCategories(response.data);
-    } catch (err) {
-      console.error('Kategoriler yüklenemedi:', err);
-    } finally {
-      setCategoriesLoading(false);
-    }
-  };
 
   const fetchProjects = async () => {
     try {
@@ -49,15 +34,17 @@ function TaskForm({ onClose, onSuccess, editTask = null }) {
       setProjects(response.data);
     } catch (err) {
       console.error('Projeler yüklenemedi:', err);
+    } finally {
+      setProjectsLoading(false);
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Kategori seçilmemiş kontrolü
-    if (!formData.categoryId) {
-      alert('Lütfen bir kategori seçin!');
+    // Proje seçimi zorunlu
+    if (!formData.projectId) {
+      alert('Lütfen bir proje seçin!');
       return;
     }
     
@@ -66,8 +53,7 @@ function TaskForm({ onClose, onSuccess, editTask = null }) {
     try {
       const taskData = {
         ...formData,
-        categoryId: parseInt(formData.categoryId),
-        projectId: formData.projectId ? parseInt(formData.projectId) : null,
+        projectId: parseInt(formData.projectId),
         dueDate: formData.dueDate || null,
       };
 
@@ -80,7 +66,7 @@ function TaskForm({ onClose, onSuccess, editTask = null }) {
       onSuccess();
       onClose();
     } catch (err) {
-      alert('Hata: ' + err.message);
+      alert('Hata: ' + (err.response?.data || err.message));
     } finally {
       setLoading(false);
     }
@@ -91,24 +77,54 @@ function TaskForm({ onClose, onSuccess, editTask = null }) {
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl dark:shadow-gray-900/50 max-w-md w-full max-h-[90vh] overflow-y-auto">
         <div className="p-6">
           <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-4">
-            {editTask ? 'Görevi Düzenle' : 'Yeni Görev'}
+            {editTask ? 'Görevi Düzenle' : 'Yeni Görev Ekle'}
           </h2>
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Proje Seçimi - ZORUNLU */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Başlık *
+                Proje <span className="text-red-500">*</span>
+              </label>
+              {projectsLoading ? (
+                <div className="text-sm text-gray-500 dark:text-gray-400">Projeler yükleniyor...</div>
+              ) : projects.length === 0 ? (
+                <div className="text-sm text-amber-600 dark:text-amber-400">
+                  Henüz proje yok. Önce bir proje oluşturun.
+                </div>
+              ) : (
+                <select
+                  required
+                  value={formData.projectId}
+                  onChange={(e) => setFormData({ ...formData, projectId: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 bg-white dark:bg-gray-700 text-gray-800 dark:text-white"
+                >
+                  <option value="">Proje Seçin</option>
+                  {projects.map((project) => (
+                    <option key={project.id} value={project.id}>
+                      {project.name}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
+
+            {/* Başlık */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Görev Başlığı <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
                 required
                 value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent bg-white dark:bg-gray-700 text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
-                placeholder="Görev başlığı"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 bg-white dark:bg-gray-700 text-gray-800 dark:text-white"
+                placeholder="Görevi tanımlayın"
               />
             </div>
 
+            {/* Açıklama */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Açıklama
@@ -116,12 +132,13 @@ function TaskForm({ onClose, onSuccess, editTask = null }) {
               <textarea
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent bg-white dark:bg-gray-700 text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
-                placeholder="Görev açıklaması (opsiyonel)"
                 rows="3"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 bg-white dark:bg-gray-700 text-gray-800 dark:text-white resize-none"
+                placeholder="Detayları yazın (opsiyonel)"
               />
             </div>
 
+            {/* Öncelik */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Öncelik
@@ -129,73 +146,32 @@ function TaskForm({ onClose, onSuccess, editTask = null }) {
               <select
                 value={formData.priority}
                 onChange={(e) => setFormData({ ...formData, priority: parseInt(e.target.value) })}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent bg-white dark:bg-gray-700 text-gray-800 dark:text-white"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 bg-white dark:bg-gray-700 text-gray-800 dark:text-white"
               >
-                <option value={1}>Düşük</option>
-                <option value={2}>Orta</option>
-                <option value={3}>Yüksek</option>
-                <option value={4}>Acil</option>
+                <option value="1">Düşük</option>
+                <option value="2">Orta</option>
+                <option value="3">Yüksek</option>
+                <option value="4">Acil</option>
               </select>
             </div>
 
+            {/* Durum */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Proje (Opsiyonel)
+                Durum
               </label>
               <select
-                value={formData.projectId}
-                onChange={(e) => setFormData({ ...formData, projectId: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent bg-white dark:bg-gray-700 text-gray-800 dark:text-white"
+                value={formData.status}
+                onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 bg-white dark:bg-gray-700 text-gray-800 dark:text-white"
               >
-                <option value="">Proje Seçin (Opsiyonel)</option>
-                {projects.map((project) => (
-                  <option key={project.id} value={project.id}>
-                    {project.name}
-                  </option>
-                ))}
+                <option value="Bekliyor">Bekliyor</option>
+                <option value="Devam Ediyor">Devam Ediyor</option>
+                <option value="Tamamlandı">Tamamlandı</option>
               </select>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Kategori *
-              </label>
-              <select
-                value={formData.categoryId}
-                onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
-                required
-                disabled={categoriesLoading || categories.length === 0}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent bg-white dark:bg-gray-700 text-gray-800 dark:text-white disabled:bg-gray-100 dark:disabled:bg-gray-600 disabled:cursor-not-allowed"
-              >
-                <option value="">
-                  {categoriesLoading ? 'Yükleniyor...' : categories.length === 0 ? 'Kategori bulunamadı' : 'Kategori Seçin'}
-                </option>
-                {categories.map((cat) => (
-                  <option key={cat.id} value={cat.id}>
-                    {cat.name}
-                  </option>
-                ))}
-              </select>
-              
-              {!categoriesLoading && categories.length === 0 && (
-                <div className="mt-2 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
-                  <p className="text-sm text-amber-800 dark:text-amber-200 mb-2">
-                    Görev eklemek için önce kategori oluşturmalısınız.
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      onClose();
-                      window.dispatchEvent(new CustomEvent('switchToCategories'));
-                    }}
-                    className="text-sm text-amber-700 dark:text-amber-300 font-medium hover:text-amber-900 dark:hover:text-amber-100 underline"
-                  >
-                    Kategoriler sekmesine git →
-                  </button>
-                </div>
-              )}
-            </div>
-
+            {/* Son Tarih */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Son Teslim Tarihi
@@ -204,24 +180,25 @@ function TaskForm({ onClose, onSuccess, editTask = null }) {
                 type="date"
                 value={formData.dueDate}
                 onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent bg-white dark:bg-gray-700 text-gray-800 dark:text-white"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 bg-white dark:bg-gray-700 text-gray-800 dark:text-white"
               />
             </div>
 
+            {/* Butonlar */}
             <div className="flex gap-3 pt-4">
-              <button
-                type="submit"
-                disabled={loading || categories.length === 0}
-                className="flex-1 bg-indigo-600 dark:bg-indigo-500 text-white py-2 rounded-lg hover:bg-indigo-700 dark:hover:bg-indigo-600 transition disabled:bg-gray-400 dark:disabled:bg-gray-600 disabled:cursor-not-allowed"
-              >
-                {loading ? 'Kaydediliyor...' : editTask ? 'Güncelle' : 'Oluştur'}
-              </button>
               <button
                 type="button"
                 onClick={onClose}
-                className="flex-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 py-2 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition"
+                className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
               >
                 İptal
+              </button>
+              <button
+                type="submit"
+                disabled={loading || projects.length === 0}
+                className="flex-1 bg-indigo-600 dark:bg-indigo-500 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 dark:hover:bg-indigo-600 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
+              >
+                {loading ? 'Kaydediliyor...' : editTask ? 'Güncelle' : 'Oluştur'}
               </button>
             </div>
           </form>

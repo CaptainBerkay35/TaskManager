@@ -26,7 +26,6 @@ namespace TaskManager.API.Data
             modelBuilder.Entity<User>().ToTable("Users");
             modelBuilder.Entity<Project>().ToTable("Projects");
 
-
             // SubTask ilişkileri
             modelBuilder.Entity<SubTask>()
                 .HasOne(st => st.Task)
@@ -34,19 +33,16 @@ namespace TaskManager.API.Data
                 .HasForeignKey(st => st.TaskId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // TaskItem - Category ilişkisi
-            modelBuilder.Entity<TaskItem>()
-                .HasOne(t => t.Category)
-                .WithMany(c => c.Tasks)
-                .HasForeignKey(t => t.CategoryId)
-                .OnDelete(DeleteBehavior.SetNull);
+            // TaskItem - Category ilişkisi KALDIRILDI
+            // Artık task'ler category'ye değil, sadece project'e bağlı
 
-            // TaskItem - User ilişkisi
+            // TaskItem - Project ilişkisi (ZORUNLU)
             modelBuilder.Entity<TaskItem>()
                 .HasOne(t => t.Project)
                 .WithMany(p => p.Tasks)
                 .HasForeignKey(t => t.ProjectId)
-                .OnDelete(DeleteBehavior.SetNull);
+                .OnDelete(DeleteBehavior.Cascade)     // ⭐ Project silinirse Task'ler otomatik silinir
+                .IsRequired();
 
             // Category - User ilişkisi
             modelBuilder.Entity<Category>()

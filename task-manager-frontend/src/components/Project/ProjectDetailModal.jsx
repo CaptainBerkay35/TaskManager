@@ -1,23 +1,20 @@
 import { useState, useEffect } from 'react';
-import { tasksAPI, categoriesAPI } from '../../services/api';
+import { tasksAPI } from '../../services/api';
 import TaskCard from '../Task/TaskCard';
 
 function ProjectDetailModal({ project, onClose, onTaskUpdate }) {
   const [tasks, setTasks] = useState([]);
-  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showTaskForm, setShowTaskForm] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
     priority: 2,
-    categoryId: '',
     dueDate: '',
   });
 
   useEffect(() => {
     fetchProjectTasks();
-    fetchCategories();
   }, [project.id]);
 
   const fetchProjectTasks = async () => {
@@ -33,38 +30,24 @@ function ProjectDetailModal({ project, onClose, onTaskUpdate }) {
     }
   };
 
-  const fetchCategories = async () => {
-    try {
-      const response = await categoriesAPI.getAll();
-      setCategories(response.data);
-    } catch (err) {
-      console.error('Kategoriler yüklenemedi:', err);
-    }
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.categoryId) {
-      alert('Lütfen kategori seçin!');
-      return;
-    }
 
     try {
       const taskData = {
         ...formData,
-        projectId: project.id,
+        projectId: project.id, // ProjectId otomatik ekleniyor
         status: 'Devam Ediyor',
-        categoryId: parseInt(formData.categoryId),
         dueDate: formData.dueDate || null,
       };
 
       await tasksAPI.create(taskData);
-      setFormData({ title: '', description: '', priority: 2, categoryId: '', dueDate: '' });
+      setFormData({ title: '', description: '', priority: 2, dueDate: '' });
       setShowTaskForm(false);
       fetchProjectTasks();
       if (onTaskUpdate) onTaskUpdate();
     } catch (err) {
-      alert('Hata: ' + err.message);
+      alert('Hata: ' + (err.response?.data || err.message));
     }
   };
 
@@ -128,6 +111,20 @@ function ProjectDetailModal({ project, onClose, onTaskUpdate }) {
                 {project.description && (
                   <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{project.description}</p>
                 )}
+                {project.category && (
+                  <div className="flex items-center gap-2 mt-2">
+                    <span className="text-xs text-gray-500 dark:text-gray-400">Kategori:</span>
+                    <span 
+                      className="text-xs px-2 py-1 rounded-full font-medium"
+                      style={{ 
+                        backgroundColor: project.category.color + '20',
+                        color: project.category.color 
+                      }}
+                    >
+                      {project.category.name}
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
             <button
@@ -175,6 +172,9 @@ function ProjectDetailModal({ project, onClose, onTaskUpdate }) {
             <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
               <form onSubmit={handleSubmit} className="space-y-3">
                 <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Görev Başlığı <span className="text-red-500">*</span>
+                  </label>
                   <input
                     type="text"
                     required
@@ -185,46 +185,53 @@ function ProjectDetailModal({ project, onClose, onTaskUpdate }) {
                   />
                 </div>
                 <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Açıklama
+                  </label>
                   <textarea
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-600 text-gray-800 dark:text-white"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-600 text-gray-800 dark:text-white resize-none"
                     placeholder="Açıklama (opsiyonel)"
                     rows="2"
                   />
                 </div>
-                <div className="grid grid-cols-3 gap-3">
-                  <select
-                    value={formData.priority}
-                    onChange={(e) => setFormData({ ...formData, priority: parseInt(e.target.value) })}
-                    className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-600 text-gray-800 dark:text-white"
-                  >
-                    <option value={1}>Düşük</option>
-                    <option value={2}>Orta</option>
-                    <option value={3}>Yüksek</option>
-                    <option value={4}>Acil</option>
-                  </select>
-                  <select
-                    required
-                    value={formData.categoryId}
-                    onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
-                    className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-600 text-gray-800 dark:text-white"
-                  >
-                    <option value="">Kategori Seç</option>
-                    {categories.map((cat) => (
-                      <option key={cat.id} value={cat.id}>{cat.name}</option>
-                    ))}
-                  </select>
-                  <input
-                    type="date"
-                    value={formData.dueDate}
-                    onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
-                    className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-600 text-gray-800 dark:text-white"
-                  />
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      Öncelik
+                    </label>
+                    <select
+                      value={formData.priority}
+                      onChange={(e) => setFormData({ ...formData, priority: parseInt(e.target.value) })}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-600 text-gray-800 dark:text-white"
+                    >
+                      <option value={1}>Düşük</option>
+                      <option value={2}>Orta</option>
+                      <option value={3}>Yüksek</option>
+                      <option value={4}>Acil</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      Son Tarih
+                    </label>
+                    <input
+                      type="date"
+                      value={formData.dueDate}
+                      onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-600 text-gray-800 dark:text-white"
+                    />
+                  </div>
+                </div>
+                <div className="bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800 rounded-lg p-3">
+                  <p className="text-xs text-indigo-700 dark:text-indigo-300">
+                    ℹ️ Bu görev otomatik olarak "<span className="font-semibold">{project.name}</span>" projesine eklenecek
+                  </p>
                 </div>
                 <button
                   type="submit"
-                  className="w-full bg-indigo-600 dark:bg-indigo-500 text-white py-2 rounded-lg hover:bg-indigo-700 dark:hover:bg-indigo-600 transition"
+                  className="w-full bg-indigo-600 dark:bg-indigo-500 text-white py-2 rounded-lg hover:bg-indigo-700 dark:hover:bg-indigo-600 transition font-medium"
                 >
                   Görevi Ekle
                 </button>
