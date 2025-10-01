@@ -207,7 +207,7 @@ function TaskCard({ task, onEdit, onDelete, onToggleComplete }) {
               </svg>
             </button>
             <button
-              onClick={() => onDelete(task.id)}
+              onClick={() => onDelete(task)}
               className="text-gray-400 hover:text-red-600 hover:bg-red-50 transition p-2 rounded-lg"
               title="Sil"
             >
