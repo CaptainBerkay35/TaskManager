@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
-import { projectsAPI, categoriesAPI } from "../../services/api";
-import ConfirmDialog from "../ConfirmDialog";
-import ProjectDetailModal from "./ProjectDetailModal";
+import { useState, useEffect } from 'react';
+import { projectsAPI, categoriesAPI } from '../../services/api';
+import ConfirmDialog from '../ConfirmDialog';
+import ProjectDetailModal from './ProjectDetailModal';
+import MultiSelectCategories from '../Category/MultiSelectCategories';
 
 function ProjectManager() {
   const [projects, setProjects] = useState([]);
@@ -14,14 +15,14 @@ function ProjectManager() {
     show: false,
     projectId: null,
     projectName: "",
-    taskCount: 0, // 👈 Task count ekle
+    taskCount: 0,
   });
   const [formData, setFormData] = useState({
     name: "",
     description: "",
     color: "#6366f1",
     deadline: "",
-    categoryId: "",
+    categoryIds: [], // Artık array (birden fazla kategori)
   });
 
   const colorOptions = [
@@ -62,33 +63,43 @@ function ProjectManager() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // En az 1 kategori zorunlu
+    if (!formData.categoryIds || formData.categoryIds.length === 0) {
+      alert('Lütfen en az 1 kategori seçin!');
+      return;
+    }
+
     try {
       const projectData = {
-        ...formData,
+        name: formData.name,
+        description: formData.description,
+        color: formData.color,
         deadline: formData.deadline || null,
-        categoryId: formData.categoryId ? parseInt(formData.categoryId) : null,
+        categoryIds: formData.categoryIds, // Array olarak gönder
       };
 
       if (editingProject) {
-        await projectsAPI.update(editingProject.id, {
-          ...projectData,
-          id: editingProject.id,
+        await projectsAPI.update(editingProject.id, { 
+          ...projectData, 
+          id: editingProject.id 
         });
       } else {
         await projectsAPI.create(projectData);
       }
+      
       setFormData({
         name: "",
         description: "",
         color: "#6366f1",
         deadline: "",
-        categoryId: "",
+        categoryIds: [],
       });
       setShowForm(false);
       setEditingProject(null);
       fetchProjects();
     } catch (err) {
-      alert("Hata: " + err.message);
+      alert("Hata: " + (err.response?.data || err.message));
     }
   };
 
@@ -99,31 +110,31 @@ function ProjectManager() {
       description: project.description || "",
       color: project.color,
       deadline: project.deadline ? project.deadline.split("T")[0] : "",
-      categoryId: project.categoryId || "",
+      categoryIds: project.categories ? project.categories.map(c => c.id) : [],
     });
     setShowForm(true);
   };
 
   const handleDeleteClick = (project) => {
-    const taskCount = project.tasks?.length || 0; // 👈 Task sayısını al
+    const taskCount = project.tasks?.length || 0;
     setDeleteConfirm({
       show: true,
       projectId: project.id,
       projectName: project.name,
-      taskCount: taskCount, // 👈 Task sayısını ekle
+      taskCount: taskCount,
     });
   };
+
   const handleDeleteConfirm = async () => {
     try {
       const response = await projectsAPI.delete(deleteConfirm.projectId);
 
-      // Backend'den gelen bilgiyi göster
       if (response.data) {
         const message =
           response.data.deletedTasksCount > 0
             ? `"${response.data.projectName}" projesi ve ${response.data.deletedTasksCount} görevi silindi.`
             : `"${response.data.projectName}" projesi silindi.`;
-        alert(message); // 👈 Bilgilendirme mesajı
+        alert(message);
       }
 
       setDeleteConfirm({
@@ -146,7 +157,7 @@ function ProjectManager() {
       description: "",
       color: "#6366f1",
       deadline: "",
-      categoryId: "",
+      categoryIds: [],
     });
   };
 
@@ -180,41 +191,7 @@ function ProjectManager() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Kategori (Opsiyonel)
-              </label>
-              <select
-                value={formData.categoryId}
-                onChange={(e) =>
-                  setFormData({ ...formData, categoryId: e.target.value })
-                }
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 bg-white dark:bg-gray-700 text-gray-800 dark:text-white"
-              >
-                <option value="">Kategori Seçin (Opsiyonel)</option>
-                {categories.map((cat) => (
-                  <option key={cat.id} value={cat.id}>
-                    {cat.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Son Teslim Tarihi
-              </label>
-              <input
-                type="date"
-                value={formData.deadline}
-                onChange={(e) =>
-                  setFormData({ ...formData, deadline: e.target.value })
-                }
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 bg-white dark:bg-gray-700 text-gray-800 dark:text-white"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Proje Adı *
+                Proje Adı <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
@@ -224,8 +201,28 @@ function ProjectManager() {
                   setFormData({ ...formData, name: e.target.value })
                 }
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 bg-white dark:bg-gray-700 text-gray-800 dark:text-white"
-                placeholder="Mobil Uygulama"
+                placeholder="Mobil Uygulama Projesi"
               />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Kategoriler <span className="text-red-500">*</span> (En az 1 tane)
+              </label>
+              {categories.length === 0 ? (
+                <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-3">
+                  <p className="text-sm text-amber-800 dark:text-amber-200">
+                    ⚠️ Proje oluşturmak için önce kategori oluşturmalısınız.
+                  </p>
+                </div>
+              ) : (
+                <MultiSelectCategories
+                  categories={categories}
+                  selectedIds={formData.categoryIds}
+                  onChange={(ids) => setFormData({ ...formData, categoryIds: ids })}
+                  required={true}
+                />
+              )}
             </div>
 
             <div>
@@ -237,49 +234,66 @@ function ProjectManager() {
                 onChange={(e) =>
                   setFormData({ ...formData, description: e.target.value })
                 }
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 bg-white dark:bg-gray-700 text-gray-800 dark:text-white"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 bg-white dark:bg-gray-700 text-gray-800 dark:text-white resize-none"
                 placeholder="Proje hakkında kısa açıklama"
                 rows="3"
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Renk
-              </label>
-              <div className="flex gap-2 flex-wrap">
-                {colorOptions.map((color) => (
-                  <button
-                    key={color.value}
-                    type="button"
-                    onClick={() =>
-                      setFormData({ ...formData, color: color.value })
-                    }
-                    className={`w-10 h-10 rounded-full transition border-2 ${
-                      formData.color === color.value
-                        ? "border-gray-800 dark:border-white scale-110"
-                        : "border-gray-300 dark:border-gray-600"
-                    }`}
-                    style={{ backgroundColor: color.value }}
-                    title={color.label}
-                  />
-                ))}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Renk
+                </label>
+                <div className="flex gap-2 flex-wrap">
+                  {colorOptions.map((color) => (
+                    <button
+                      key={color.value}
+                      type="button"
+                      onClick={() =>
+                        setFormData({ ...formData, color: color.value })
+                      }
+                      className={`w-10 h-10 rounded-full transition border-2 ${
+                        formData.color === color.value
+                          ? "border-gray-800 dark:border-white scale-110"
+                          : "border-gray-300 dark:border-gray-600"
+                      }`}
+                      style={{ backgroundColor: color.value }}
+                      title={color.label}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Son Teslim Tarihi
+                </label>
+                <input
+                  type="date"
+                  value={formData.deadline}
+                  onChange={(e) =>
+                    setFormData({ ...formData, deadline: e.target.value })
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 bg-white dark:bg-gray-700 text-gray-800 dark:text-white"
+                />
               </div>
             </div>
 
             <div className="flex gap-3 pt-2">
               <button
-                type="submit"
-                className="flex-1 bg-indigo-600 dark:bg-indigo-500 text-white py-2 rounded-lg hover:bg-indigo-700 dark:hover:bg-indigo-600 transition"
-              >
-                {editingProject ? "Güncelle" : "Oluştur"}
-              </button>
-              <button
                 type="button"
                 onClick={handleCancel}
-                className="flex-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 py-2 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition"
+                className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
               >
                 İptal
+              </button>
+              <button
+                type="submit"
+                disabled={categories.length === 0}
+                className="flex-1 bg-indigo-600 dark:bg-indigo-500 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 dark:hover:bg-indigo-600 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
+              >
+                {editingProject ? "Güncelle" : "Oluştur"}
               </button>
             </div>
           </form>
@@ -315,14 +329,33 @@ function ProjectManager() {
               style={{ borderLeftColor: project.color }}
             >
               <div className="flex justify-between items-start mb-3">
-                <div className="flex items-center gap-2">
-                  <div
-                    className="w-4 h-4 rounded-full"
-                    style={{ backgroundColor: project.color }}
-                  />
-                  <h3 className="text-lg font-semibold text-gray-800 dark:text-white">
-                    {project.name}
-                  </h3>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div
+                      className="w-4 h-4 rounded-full"
+                      style={{ backgroundColor: project.color }}
+                    />
+                    <h3 className="text-lg font-semibold text-gray-800 dark:text-white">
+                      {project.name}
+                    </h3>
+                  </div>
+                  {/* Kategorileri göster */}
+                  {project.categories && project.categories.length > 0 && (
+                    <div className="flex flex-wrap gap-1">
+                      {project.categories.map((cat) => (
+                        <span
+                          key={cat.id}
+                          className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium"
+                          style={{
+                            backgroundColor: cat.color + "20",
+                            color: cat.color,
+                          }}
+                        >
+                          {cat.name}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
                 <div className="flex gap-2">
                   <button
@@ -382,9 +415,11 @@ function ProjectManager() {
                 <span className="text-sm text-gray-500 dark:text-gray-400">
                   {project.tasks?.length || 0} görev
                 </span>
-                <span className="text-xs text-gray-400 dark:text-gray-500">
-                  {new Date(project.createdDate).toLocaleDateString("tr-TR")}
-                </span>
+                {project.deadline && (
+                  <span className="text-xs text-gray-400 dark:text-gray-500">
+                    {new Date(project.deadline).toLocaleDateString("tr-TR")}
+                  </span>
+                )}
               </div>
             </div>
           ))}

@@ -115,7 +115,8 @@ namespace TaskManager.API.Controllers
             }
 
             // Önce bu kategoriye bağlı proje var mı kontrol et
-            var hasProjects = await _context.Projects.AnyAsync(p => p.CategoryId == id);
+            var hasProjects = await _context.ProjectCategories.AnyAsync(pc => pc.CategoryId == id);
+
 
             if (hasProjects)
             {
