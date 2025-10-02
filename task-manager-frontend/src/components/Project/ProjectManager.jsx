@@ -3,6 +3,7 @@ import { projectsAPI, categoriesAPI } from '../../services/api';
 import ConfirmDialog from '../ConfirmDialog';
 import ProjectDetailModal from './ProjectDetailModal';
 import MultiSelectCategories from '../Category/MultiSelectCategories';
+import ProjectFilters from './ProjectFilters';
 
 function ProjectManager() {
   const [projects, setProjects] = useState([]);
@@ -11,18 +12,25 @@ function ProjectManager() {
   const [showForm, setShowForm] = useState(false);
   const [editingProject, setEditingProject] = useState(null);
   const [selectedProject, setSelectedProject] = useState(null);
+  
+  // Filter ve Sort states
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterCategory, setFilterCategory] = useState('all');
+  const [sortBy, setSortBy] = useState('createdDate'); // Default: Eklenme tarihi
+  
   const [deleteConfirm, setDeleteConfirm] = useState({
     show: false,
     projectId: null,
     projectName: "",
     taskCount: 0,
   });
+  
   const [formData, setFormData] = useState({
     name: "",
     description: "",
     color: "#6366f1",
     deadline: "",
-    categoryIds: [], // Artık array (birden fazla kategori)
+    categoryIds: [],
   });
 
   const colorOptions = [
@@ -64,7 +72,6 @@ function ProjectManager() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // En az 1 kategori zorunlu
     if (!formData.categoryIds || formData.categoryIds.length === 0) {
       alert('Lütfen en az 1 kategori seçin!');
       return;
@@ -76,7 +83,7 @@ function ProjectManager() {
         description: formData.description,
         color: formData.color,
         deadline: formData.deadline || null,
-        categoryIds: formData.categoryIds, // Array olarak gönder
+        categoryIds: formData.categoryIds,
       };
 
       if (editingProject) {
@@ -161,6 +168,58 @@ function ProjectManager() {
     });
   };
 
+  // Filtreleme ve Sıralama Fonksiyonu
+  const getFilteredAndSortedProjects = () => {
+    let filtered = [...projects];
+
+    // Arama filtresi
+    if (searchTerm) {
+      filtered = filtered.filter(project =>
+        project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (project.description && project.description.toLowerCase().includes(searchTerm.toLowerCase()))
+      );
+    }
+
+    // Kategori filtresi
+    if (filterCategory !== 'all') {
+      filtered = filtered.filter(project =>
+        project.categories && project.categories.some(cat => cat.id === parseInt(filterCategory))
+      );
+    }
+
+    // Sıralama
+    filtered.sort((a, b) => {
+      switch (sortBy) {
+        case 'createdDate':
+          return new Date(b.createdDate) - new Date(a.createdDate);
+        case 'createdDateOld':
+          return new Date(a.createdDate) - new Date(b.createdDate);
+        case 'deadline':
+          if (!a.deadline) return 1;
+          if (!b.deadline) return -1;
+          return new Date(a.deadline) - new Date(b.deadline);
+        case 'deadlineFar':
+          if (!a.deadline) return 1;
+          if (!b.deadline) return -1;
+          return new Date(b.deadline) - new Date(a.deadline);
+        case 'name':
+          return a.name.localeCompare(b.name, 'tr');
+        case 'nameDesc':
+          return b.name.localeCompare(a.name, 'tr');
+        case 'taskCount':
+          return (b.tasks?.length || 0) - (a.tasks?.length || 0);
+        case 'taskCountLow':
+          return (a.tasks?.length || 0) - (b.tasks?.length || 0);
+        default:
+          return new Date(b.createdDate) - new Date(a.createdDate);
+      }
+    });
+
+    return filtered;
+  };
+
+  const filteredProjects = getFilteredAndSortedProjects();
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -182,6 +241,19 @@ function ProjectManager() {
           {showForm ? "İptal" : "+ Yeni Proje"}
         </button>
       </div>
+
+      {/* Filtreler - Form açık değilken göster */}
+      {!showForm && (
+        <ProjectFilters
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
+          filterCategory={filterCategory}
+          setFilterCategory={setFilterCategory}
+          sortBy={sortBy}
+          setSortBy={setSortBy}
+          categories={categories}
+        />
+      )}
 
       {showForm && (
         <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-700">
@@ -319,9 +391,15 @@ function ProjectManager() {
             Henüz proje yok. Yeni proje oluşturun!
           </p>
         </div>
+      ) : filteredProjects.length === 0 ? (
+        <div className="text-center py-12 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-300 dark:border-gray-600">
+          <p className="text-gray-500 dark:text-gray-400">
+            Filtrelere uygun proje bulunamadı.
+          </p>
+        </div>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {projects.map((project) => (
+          {filteredProjects.map((project) => (
             <div
               key={project.id}
               onClick={() => setSelectedProject(project)}
@@ -339,7 +417,6 @@ function ProjectManager() {
                       {project.name}
                     </h3>
                   </div>
-                  {/* Kategorileri göster */}
                   {project.categories && project.categories.length > 0 && (
                     <div className="flex flex-wrap gap-1">
                       {project.categories.map((cat) => (
