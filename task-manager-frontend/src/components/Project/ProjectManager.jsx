@@ -4,6 +4,7 @@ import ConfirmDialog from '../ConfirmDialog';
 import ProjectDetailModal from './ProjectDetailModal';
 import MultiSelectCategories from '../Category/MultiSelectCategories';
 import ProjectFilters from './ProjectFilters';
+import RichTextEditor from '../RichTextEditor';
 
 function ProjectManager() {
   const [projects, setProjects] = useState([]);
@@ -16,7 +17,7 @@ function ProjectManager() {
   // Filter ve Sort states
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('all');
-  const [sortBy, setSortBy] = useState('createdDate'); // Default: Eklenme tarihi
+  const [sortBy, setSortBy] = useState('createdDate');
   
   const [deleteConfirm, setDeleteConfirm] = useState({
     show: false,
@@ -33,14 +34,10 @@ function ProjectManager() {
     categoryIds: [],
   });
 
-  const colorOptions = [
-    { value: "#6366f1", label: "İndigo" },
-    { value: "#3b82f6", label: "Mavi" },
-    { value: "#10b981", label: "Yeşil" },
-    { value: "#f59e0b", label: "Turuncu" },
-    { value: "#ef4444", label: "Kırmızı" },
-    { value: "#8b5cf6", label: "Mor" },
-    { value: "#ec4899", label: "Pembe" },
+  // CategoryManager'dan alınan renk paleti
+  const colorPresets = [
+    "#3B82F6", "#EF4444", "#10B981", "#F59E0B",
+    "#8B5CF6", "#EC4899", "#06B6D4", "#84CC16",
   ];
 
   useEffect(() => {
@@ -168,11 +165,9 @@ function ProjectManager() {
     });
   };
 
-  // Filtreleme ve Sıralama Fonksiyonu
   const getFilteredAndSortedProjects = () => {
     let filtered = [...projects];
 
-    // Arama filtresi
     if (searchTerm) {
       filtered = filtered.filter(project =>
         project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -180,14 +175,12 @@ function ProjectManager() {
       );
     }
 
-    // Kategori filtresi
     if (filterCategory !== 'all') {
       filtered = filtered.filter(project =>
         project.categories && project.categories.some(cat => cat.id === parseInt(filterCategory))
       );
     }
 
-    // Sıralama
     filtered.sort((a, b) => {
       switch (sortBy) {
         case 'createdDate':
@@ -242,7 +235,6 @@ function ProjectManager() {
         </button>
       </div>
 
-      {/* Filtreler - Form açık değilken göster */}
       {!showForm && (
         <ProjectFilters
           searchTerm={searchTerm}
@@ -297,44 +289,46 @@ function ProjectManager() {
               )}
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Açıklama
-              </label>
-              <textarea
-                value={formData.description}
-                onChange={(e) =>
-                  setFormData({ ...formData, description: e.target.value })
-                }
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 bg-white dark:bg-gray-700 text-gray-800 dark:text-white resize-none"
-                placeholder="Proje hakkında kısa açıklama"
-                rows="3"
-              />
-            </div>
+            <RichTextEditor
+              value={formData.description}
+              onChange={(value) => setFormData({ ...formData, description: value })}
+              label="Açıklama"
+              placeholder="Proje hakkında detaylı açıklama&#10;&#10;"
+              rows={5}
+              showCharCount={true}
+              maxLength={3000}
+              id="project-description-editor"
+            />
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* RENK SEÇİMİ - CategoryManager Stili */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Renk
+                  Renk Seç
                 </label>
-                <div className="flex gap-2 flex-wrap">
-                  {colorOptions.map((color) => (
+                <div className="flex gap-2 flex-wrap mb-2">
+                  {colorPresets.map((color) => (
                     <button
-                      key={color.value}
+                      key={color}
                       type="button"
-                      onClick={() =>
-                        setFormData({ ...formData, color: color.value })
-                      }
-                      className={`w-10 h-10 rounded-full transition border-2 ${
-                        formData.color === color.value
-                          ? "border-gray-800 dark:border-white scale-110"
+                      onClick={() => setFormData({ ...formData, color })}
+                      className={`w-10 h-10 rounded-lg border-2 transition ${
+                        formData.color === color
+                          ? "border-gray-800 dark:border-gray-200 scale-110"
                           : "border-gray-300 dark:border-gray-600"
                       }`}
-                      style={{ backgroundColor: color.value }}
-                      title={color.label}
+                      style={{ backgroundColor: color }}
                     />
                   ))}
                 </div>
+                <input
+                  type="color"
+                  value={formData.color}
+                  onChange={(e) =>
+                    setFormData({ ...formData, color: e.target.value })
+                  }
+                  className="w-full h-10 rounded-lg border border-gray-300 dark:border-gray-600 cursor-pointer bg-white dark:bg-gray-700"
+                />
               </div>
 
               <div>
