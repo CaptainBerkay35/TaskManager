@@ -4,6 +4,7 @@ import StatCard from './StatCard';
 import ProjectProgressList from './ProjectProgressList';
 import CategoryDistribution from './CategoryDistribution';
 import DeadlineAlerts from './DeadlineAlerts';
+import MiniCalendar from '../Calendar/MiniCalendar';
 
 function Dashboard() {
   const { tasks, projects, categories, loading, error } = useDashboardData();
@@ -76,8 +77,8 @@ function Dashboard() {
         />
       </div>
 
-      {/* Proje İlerleme ve Kategori Dağılımı */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* Proje İlerleme, Kategori Dağılımı ve Mini Takvim */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <ProjectProgressList 
           projects={stats.projectsWithTaskCount}
           title="En Çok Görevli Projeler"
@@ -86,6 +87,7 @@ function Dashboard() {
           categories={stats.projectsByCategory}
           totalProjects={stats.totalProjects}
         />
+        <MiniCalendar />
       </div>
 
       {/* Gecikmiş ve Yaklaşan Deadline'lar */}
