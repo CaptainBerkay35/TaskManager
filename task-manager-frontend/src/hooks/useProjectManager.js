@@ -13,9 +13,11 @@ export function useProjectManager() {
       setError(null);
       const response = await projectsAPI.getAll();
       setProjects(response.data);
+      return response.data; // ✅ Return the fresh data
     } catch (err) {
       console.error("Projeler yüklenemedi:", err);
       setError("Projeler yüklenirken bir hata oluştu");
+      return []; // Return empty array on error
     } finally {
       setLoading(false);
     }
@@ -81,6 +83,6 @@ export function useProjectManager() {
     createProject,
     updateProject,
     deleteProject,
-    refetch: fetchProjects,
+    refetch: fetchProjects, // Now returns fresh data
   };
 }
