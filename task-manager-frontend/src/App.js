@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
-import TaskList from "./components/Task/TaskList";
+import CalendarView from './components/Calendar/CalendarView'; 
 import CategoryManager from "./components/Category/CategoryManager";
 import Dashboard from "./components/Dashboard/Dashboard";
 import ProjectManager from "./components/Project/ProjectManager";
@@ -10,6 +10,8 @@ import ProjectTaskView from "./components/Project/ProjectTaskView";
 import ThemeToggle from "./components/ThemeToggle";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import './styles/calendar-custom.css'; // YENİ EKLENEN CSS
+
 
 // Korumalı Route bileşeni
 const ProtectedRoute = ({ children }) => {
@@ -161,6 +163,16 @@ const AppContent = () => {
                   Proje Yönetimi
                 </button>
                 <button
+                  onClick={() => setActiveTab('calendar')}
+                  className={`px-4 py-2 rounded-lg font-medium transition text-sm ${
+                    activeTab === 'calendar'
+                      ? 'bg-white dark:bg-gray-600 text-indigo-600 dark:text-indigo-400 shadow'
+                      : 'text-gray-600 dark:text-gray-300'
+                  }`}
+                >
+                  📅 Takvim
+                </button>
+                <button
                   onClick={() => setActiveTab("categories")}
                   className={`px-4 py-2 rounded-lg font-medium transition text-sm ${
                     activeTab === "categories"
@@ -181,6 +193,7 @@ const AppContent = () => {
               <ProjectTaskView projectId={selectedProjectId} />
             )}
             {activeTab === "projects" && <ProjectManager />}
+            {activeTab === 'calendar' && <CalendarView />}
             {activeTab === "categories" && <CategoryManager />}
           </main>
         </div>
