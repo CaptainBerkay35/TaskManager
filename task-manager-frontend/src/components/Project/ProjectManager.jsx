@@ -17,6 +17,7 @@ function ProjectManager() {
     createProject,
     updateProject,
     deleteProject,
+    refetch, // ← Projeleri yeniden yüklemek için
   } = useProjectManager();
 
   const {
@@ -102,6 +103,19 @@ function ProjectManager() {
     });
   };
 
+  // ✅ Task güncellendiğinde projeleri yeniden yükle
+  const handleTaskUpdate = async () => {
+    const freshProjects = await refetch(); // Returns fresh data
+    
+    // Modal açıksa, güncel project bilgisini güncelle
+    if (selectedProject && freshProjects) {
+      const updatedProject = freshProjects.find(p => p.id === selectedProject.id);
+      if (updatedProject) {
+        setSelectedProject(updatedProject);
+      }
+    }
+  };
+
   // Loading state
   if (loading) {
     return <LoadingState />;
@@ -112,13 +126,27 @@ function ProjectManager() {
       {/* Header */}
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
-          Projeler
+          📁 Projeler
         </h2>
         <button
           onClick={() => setShowForm(!showForm)}
-          className="bg-indigo-600 dark:bg-indigo-500 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 dark:hover:bg-indigo-600 transition"
+          className="bg-indigo-600 dark:bg-indigo-500 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 dark:hover:bg-indigo-600 transition flex items-center gap-2"
         >
-          {showForm ? "İptal" : "+ Yeni Proje"}
+          {showForm ? (
+            <>
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+              İptal
+            </>
+          ) : (
+            <>
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              Yeni Proje
+            </>
+          )}
         </button>
       </div>
 
@@ -184,7 +212,7 @@ function ProjectManager() {
         <ProjectDetailModal
           project={selectedProject}
           onClose={() => setSelectedProject(null)}
-          onTaskUpdate={() => {}} // Refetch handled by hook
+          onTaskUpdate={handleTaskUpdate} // ✅ Artık gerçek fonksiyon
         />
       )}
     </div>

@@ -37,19 +37,23 @@ function TaskCard({ task, onEdit, onDelete, onToggleComplete, onUpdateStatus }) 
         return "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300";
       case "Devam Ediyor":
         return "bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300";
+      case "Bekliyor":
+        return "bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300";
       default:
         return "bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300";
     }
   };
 
-  const handleStatusChange = (e, newStatus) => {
+  const handleTogglePause = (e) => {
     e.stopPropagation();
-    if (onUpdateStatus) {
-      onUpdateStatus(task, newStatus);
-    }
+    if (!onUpdateStatus) return;
+
+    const newStatus = task.status === "Devam Ediyor" ? "Bekliyor" : "Devam Ediyor";
+    onUpdateStatus(task, newStatus);
   };
 
   const isCompleted = task.status === "Tamamlandı" || task.isCompleted;
+  const isPaused = task.status === "Bekliyor";
 
   return (
     <>
@@ -57,8 +61,8 @@ function TaskCard({ task, onEdit, onDelete, onToggleComplete, onUpdateStatus }) 
         className={`p-4 rounded-lg shadow hover:shadow-lg transition border-2 cursor-pointer ${
           isCompleted
             ? "border-green-300 dark:border-green-700 bg-green-50 dark:bg-green-900/20 opacity-75"
-            : task.status === "Bekliyor"
-            ? "bg-orange-100 dark:bg-orange-900/20 border-gray-200 dark:border-gray-700"
+            : isPaused
+            ? "bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-700"
             : "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700"
         }`}
         onClick={() => setShowModal(true)}
@@ -81,6 +85,13 @@ function TaskCard({ task, onEdit, onDelete, onToggleComplete, onUpdateStatus }) 
                 </svg>
               </span>
             )}
+            {isPaused && (
+              <span className="text-orange-600 dark:text-orange-400 mt-1 flex-shrink-0">
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
+                </svg>
+              </span>
+            )}
             <h3
               className={`text-lg font-semibold ${
                 isCompleted
@@ -94,6 +105,29 @@ function TaskCard({ task, onEdit, onDelete, onToggleComplete, onUpdateStatus }) 
           
           {/* Action Buttons - Title'ın Yanında */}
           <div className="flex gap-1.5 flex-shrink-0">
+            {/* Başlat/Durdur Butonu - Sadece tamamlanmamış görevlerde */}
+            {!isCompleted && (
+              <button
+                onClick={handleTogglePause}
+                className={`p-2 rounded-lg transition ${
+                  isPaused
+                    ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/50"
+                    : "bg-orange-50 dark:bg-orange-900/30 text-orange-600 dark:text-orange-300 hover:bg-orange-100 dark:hover:bg-orange-900/50"
+                }`}
+                title={isPaused ? "Görevi Başlat" : "Görevi Durdur"}
+              >
+                {isPaused ? (
+                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
+                  </svg>
+                ) : (
+                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
+                  </svg>
+                )}
+              </button>
+            )}
+
             <button
               onClick={(e) => {
                 e.stopPropagation();
@@ -106,6 +140,7 @@ function TaskCard({ task, onEdit, onDelete, onToggleComplete, onUpdateStatus }) 
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
               </svg>
             </button>
+
             <button
               onClick={(e) => {
                 e.stopPropagation();
@@ -128,6 +163,7 @@ function TaskCard({ task, onEdit, onDelete, onToggleComplete, onUpdateStatus }) 
                 </svg>
               )}
             </button>
+
             <button
               onClick={(e) => {
                 e.stopPropagation();
@@ -155,8 +191,8 @@ function TaskCard({ task, onEdit, onDelete, onToggleComplete, onUpdateStatus }) 
               >
                 {new Date(task.dueDate) < new Date() &&
                   !isCompleted &&
-                  "⚠ Gecikmiş: "}
-                Son Teslim Tarihi:{" "}
+                  "⚠️ Gecikmiş: "}
+                📅 Son Teslim Tarihi:{" "}
                 {new Date(task.dueDate).toLocaleDateString("tr-TR", {
                   year: "numeric",
                   month: "long",
@@ -189,6 +225,9 @@ function TaskCard({ task, onEdit, onDelete, onToggleComplete, onUpdateStatus }) 
                   task.status
                 )}`}
               >
+                {task.status === "Bekliyor" && "⏸️ "}
+                {task.status === "Devam Ediyor" && "▶️ "}
+                {task.status === "Tamamlandı" && "✅ "}
                 {task.status}
               </span>
               
