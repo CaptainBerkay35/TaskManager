@@ -1,5 +1,6 @@
 import { useState } from "react";
 import TaskDetailModal from "./TaskDetailModal";
+import DescriptionRenderer from "../DescriptionRenderer";
 
 function TaskCard({ task, onEdit, onDelete, onToggleComplete, onUpdateStatus }) {
   const [showModal, setShowModal] = useState(false);
@@ -165,15 +166,14 @@ function TaskCard({ task, onEdit, onDelete, onToggleComplete, onUpdateStatus }) 
             )}
 
             {task.description && (
-              <p
-                className={`text-sm mb-3 line-clamp-2 ${
-                  isCompleted
-                    ? "text-gray-400 dark:text-gray-500"
-                    : "text-gray-600 dark:text-gray-300"
-                }`}
-              >
-                {task.description}
-              </p>
+              <DescriptionRenderer 
+              text={task.description}
+              maxLines={2}
+              className={isCompleted 
+                ? "text-gray-400 dark:text-gray-500 mb-3" 
+                : "text-gray-600 dark:text-gray-300 mb-3"
+              }
+            />
             )}
 
             <div className="flex gap-2 flex-wrap items-center">
@@ -192,7 +192,6 @@ function TaskCard({ task, onEdit, onDelete, onToggleComplete, onUpdateStatus }) 
                 {task.status}
               </span>
               
-              {/* PROJECT gösterilir, CATEGORY kaldırıldı */}
               {task.project && (
                 <span
                   className="px-2 py-1 rounded text-xs font-medium flex items-center gap-1"

@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react';
 import { tasksAPI } from '../../services/api';
 import TaskCard from '../Task/TaskCard';
+import RichTextEditor from "../RichTextEditor";
+import TaskForm from '../Task/TaskForm';
 
 function ProjectDetailModal({ project, onClose, onTaskUpdate }) {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showTaskForm, setShowTaskForm] = useState(false);
+  const [editingTask, setEditingTask] = useState(null);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -28,6 +31,10 @@ function ProjectDetailModal({ project, onClose, onTaskUpdate }) {
     } finally {
       setLoading(false);
     }
+  };
+  const handleEditTask = (task) => {
+    setEditingTask(task);
+    setShowTaskForm(true);
   };
 
   const handleSubmit = async (e) => {
@@ -184,18 +191,16 @@ function ProjectDetailModal({ project, onClose, onTaskUpdate }) {
                     placeholder="Görev başlığı"
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Açıklama
-                  </label>
-                  <textarea
-                    value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-600 text-gray-800 dark:text-white resize-none"
-                    placeholder="Açıklama (opsiyonel)"
-                    rows="2"
-                  />
-                </div>
+                <RichTextEditor
+                  value={formData.description}
+                  onChange={(value) => setFormData({ ...formData, description: value })}
+                  label="Açıklama"
+                  placeholder="Görev detaylarını yazın...&#10;&#10;"
+                  rows={4}
+                  showCharCount={true}
+                  maxLength={1000}
+                  id="project-task-description"
+                />
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -258,7 +263,7 @@ function ProjectDetailModal({ project, onClose, onTaskUpdate }) {
                 <TaskCard
                   key={task.id}
                   task={task}
-                  onEdit={() => {}}
+                  onEdit={handleEditTask}
                   onDelete={handleDeleteTask}
                   onToggleComplete={handleToggleComplete}
                   onUpdateStatus={handleUpdateStatus}
@@ -268,6 +273,20 @@ function ProjectDetailModal({ project, onClose, onTaskUpdate }) {
           )}
         </div>
       </div>
+       {/* TaskForm Modal için - Edit durumunda */}
+      {showTaskForm && editingTask && (
+        <TaskForm
+          onClose={() => {
+            setShowTaskForm(false);
+            setEditingTask(null);
+          }}
+          onSuccess={() => {
+            fetchProjectTasks();
+            if (onTaskUpdate) onTaskUpdate();
+          }}
+          editTask={editingTask}
+        />
+      )}
     </div>
   );
 }
