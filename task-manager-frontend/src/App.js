@@ -1,20 +1,20 @@
-import { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider, useAuth } from './context/AuthContext';
-import TaskList from './components/Task/TaskList';
-import CategoryManager from './components/Category/CategoryManager';
-import Dashboard from './components/Dashboard/Dashboard';
-import ProjectManager from './components/Project/ProjectManager';
-import ProjectSidebar from './components/Project/ProjectSidebar';
-import ProjectTaskView from './components/Project/ProjectTaskView';
-import ThemeToggle from './components/ThemeToggle';
-import Login from './pages/Login';
-import Register from './pages/Register';
+import { useState, useEffect } from "react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { AuthProvider, useAuth } from "./context/AuthContext";
+import TaskList from "./components/Task/TaskList";
+import CategoryManager from "./components/Category/CategoryManager";
+import Dashboard from "./components/Dashboard/Dashboard";
+import ProjectManager from "./components/Project/ProjectManager";
+import ProjectSidebar from "./components/Project/ProjectSidebar";
+import ProjectTaskView from "./components/Project/ProjectTaskView";
+import ThemeToggle from "./components/ThemeToggle";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
 
 // Korumalı Route bileşeni
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
-  
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 to-gray-800">
@@ -25,18 +25,18 @@ const ProtectedRoute = ({ children }) => {
       </div>
     );
   }
-  
+
   if (!user) {
     return <Navigate to="/login" replace />;
   }
-  
+
   return children;
 };
 
 // Login için zaten giriş yapmış kullanıcıları yönlendir
 const PublicRoute = ({ children }) => {
   const { user, loading } = useAuth();
-  
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 to-gray-800">
@@ -47,30 +47,33 @@ const PublicRoute = ({ children }) => {
       </div>
     );
   }
-  
+
   if (user) {
     return <Navigate to="/" replace />;
   }
-  
+
   return children;
 };
 
 // Ana uygulama içeriği
 const AppContent = () => {
   const { user, logout } = useAuth();
-  const [activeTab, setActiveTab] = useState('tasks');
+  const [activeTab, setActiveTab] = useState("tasks");
   const [selectedProjectId, setSelectedProjectId] = useState(null);
   const [showProjectForm, setShowProjectForm] = useState(false);
 
   useEffect(() => {
     // TaskForm'dan gelen kategori sekmesine geçiş eventi
     const handleSwitchToCategories = () => {
-      setActiveTab('categories');
+      setActiveTab("categories");
     };
 
-    window.addEventListener('switchToCategories', handleSwitchToCategories);
+    window.addEventListener("switchToCategories", handleSwitchToCategories);
     return () => {
-      window.removeEventListener('switchToCategories', handleSwitchToCategories);
+      window.removeEventListener(
+        "switchToCategories",
+        handleSwitchToCategories
+      );
     };
   }, []);
 
@@ -78,7 +81,7 @@ const AppContent = () => {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 transition-colors">
       <div className="flex h-screen overflow-hidden">
         {/* Sidebar - Sadece tasks sekmesinde görünür */}
-        {activeTab === 'tasks' && (
+        {activeTab === "tasks" && (
           <ProjectSidebar
             selectedProjectId={selectedProjectId}
             onProjectSelect={setSelectedProjectId}
@@ -104,9 +107,22 @@ const AppContent = () => {
                 <ThemeToggle />
                 <button
                   onClick={logout}
-                  className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition text-sm"
+                  className="p-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition"
+                  title="Çıkış"
                 >
-                  Çıkış
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                    />
+                  </svg>
                 </button>
               </div>
             </div>
@@ -115,41 +131,41 @@ const AppContent = () => {
             <div className="mt-4">
               <div className="bg-gray-100 dark:bg-gray-700 rounded-lg p-1 inline-flex gap-1">
                 <button
-                  onClick={() => setActiveTab('dashboard')}
+                  onClick={() => setActiveTab("dashboard")}
                   className={`px-4 py-2 rounded-lg font-medium transition text-sm ${
-                    activeTab === 'dashboard'
-                      ? 'bg-white dark:bg-gray-600 text-indigo-600 dark:text-indigo-400 shadow'
-                      : 'text-gray-600 dark:text-gray-300'
+                    activeTab === "dashboard"
+                      ? "bg-white dark:bg-gray-600 text-indigo-600 dark:text-indigo-400 shadow"
+                      : "text-gray-600 dark:text-gray-300"
                   }`}
                 >
                   Dashboard
                 </button>
                 <button
-                  onClick={() => setActiveTab('tasks')}
+                  onClick={() => setActiveTab("tasks")}
                   className={`px-4 py-2 rounded-lg font-medium transition text-sm ${
-                    activeTab === 'tasks'
-                      ? 'bg-white dark:bg-gray-600 text-indigo-600 dark:text-indigo-400 shadow'
-                      : 'text-gray-600 dark:text-gray-300'
+                    activeTab === "tasks"
+                      ? "bg-white dark:bg-gray-600 text-indigo-600 dark:text-indigo-400 shadow"
+                      : "text-gray-600 dark:text-gray-300"
                   }`}
                 >
                   Görevler
                 </button>
                 <button
-                  onClick={() => setActiveTab('projects')}
+                  onClick={() => setActiveTab("projects")}
                   className={`px-4 py-2 rounded-lg font-medium transition text-sm ${
-                    activeTab === 'projects'
-                      ? 'bg-white dark:bg-gray-600 text-indigo-600 dark:text-indigo-400 shadow'
-                      : 'text-gray-600 dark:text-gray-300'
+                    activeTab === "projects"
+                      ? "bg-white dark:bg-gray-600 text-indigo-600 dark:text-indigo-400 shadow"
+                      : "text-gray-600 dark:text-gray-300"
                   }`}
                 >
                   Proje Yönetimi
                 </button>
                 <button
-                  onClick={() => setActiveTab('categories')}
+                  onClick={() => setActiveTab("categories")}
                   className={`px-4 py-2 rounded-lg font-medium transition text-sm ${
-                    activeTab === 'categories'
-                      ? 'bg-white dark:bg-gray-600 text-indigo-600 dark:text-indigo-400 shadow'
-                      : 'text-gray-600 dark:text-gray-300'
+                    activeTab === "categories"
+                      ? "bg-white dark:bg-gray-600 text-indigo-600 dark:text-indigo-400 shadow"
+                      : "text-gray-600 dark:text-gray-300"
                   }`}
                 >
                   Kategoriler
@@ -160,10 +176,12 @@ const AppContent = () => {
 
           {/* Content Area */}
           <main className="flex-1 overflow-y-auto p-6">
-            {activeTab === 'dashboard' && <Dashboard />}
-            {activeTab === 'tasks' && <ProjectTaskView projectId={selectedProjectId} />}
-            {activeTab === 'projects' && <ProjectManager />}
-            {activeTab === 'categories' && <CategoryManager />}
+            {activeTab === "dashboard" && <Dashboard />}
+            {activeTab === "tasks" && (
+              <ProjectTaskView projectId={selectedProjectId} />
+            )}
+            {activeTab === "projects" && <ProjectManager />}
+            {activeTab === "categories" && <CategoryManager />}
           </main>
         </div>
       </div>
@@ -172,14 +190,16 @@ const AppContent = () => {
       {showProjectForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white dark:bg-gray-800 rounded-xl p-6 max-w-md w-full">
-            <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-4">Yeni Proje</h3>
+            <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-4">
+              Yeni Proje
+            </h3>
             <p className="text-gray-600 dark:text-gray-400 mb-4">
               Proje oluşturmak için "Proje Yönetimi" sekmesine gidin.
             </p>
             <div className="flex gap-3">
               <button
                 onClick={() => {
-                  setActiveTab('projects');
+                  setActiveTab("projects");
                   setShowProjectForm(false);
                 }}
                 className="flex-1 bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition"
@@ -205,16 +225,22 @@ function App() {
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          <Route path="/login" element={
-            <PublicRoute>
-              <Login />
-            </PublicRoute>
-          } />
-          <Route path="/register" element={
-            <PublicRoute>
-              <Register />
-            </PublicRoute>
-          } />
+          <Route
+            path="/login"
+            element={
+              <PublicRoute>
+                <Login />
+              </PublicRoute>
+            }
+          />
+          <Route
+            path="/register"
+            element={
+              <PublicRoute>
+                <Register />
+              </PublicRoute>
+            }
+          />
           <Route
             path="/*"
             element={

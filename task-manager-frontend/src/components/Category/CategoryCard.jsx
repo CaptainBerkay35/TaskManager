@@ -1,4 +1,4 @@
-function CategoryCard({ category, onEdit, onDelete, onViewTasks }) {
+function CategoryCard({ category, onEdit, onDelete, onViewProjects }) {
   return (
     <div
       className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow dark:shadow-gray-900/50 border-l-4 hover:shadow-md transition"
@@ -15,10 +15,10 @@ function CategoryCard({ category, onEdit, onDelete, onViewTasks }) {
               {category.name}
             </h3>
             <button
-              onClick={() => onViewTasks(category)}
+              onClick={() => onViewProjects(category)}
               className="text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 hover:underline"
             >
-              {category.tasks?.length || 0} görev
+              {category.projectCategories?.length || 0} proje
             </button>
           </div>
         </div>
@@ -28,7 +28,12 @@ function CategoryCard({ category, onEdit, onDelete, onViewTasks }) {
             className="text-gray-400 dark:text-gray-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition"
             title="Düzenle"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -42,7 +47,12 @@ function CategoryCard({ category, onEdit, onDelete, onViewTasks }) {
             className="text-gray-400 dark:text-gray-500 hover:text-red-600 dark:hover:text-red-400 transition"
             title="Sil"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"

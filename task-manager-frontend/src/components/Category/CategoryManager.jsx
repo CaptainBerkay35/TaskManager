@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useCategoryManager } from "../../hooks/useCategoryManager";
 import CategoryForm from "./CategoryForm";
 import CategoryCard from "./CategoryCard";
-import CategoryTasksModal from "./CategoryTasksModal";
+import CategoryProjectsModal from "./CategoryProjectsModal";
 import { EmptyCategoriesState, LoadingState } from "./CategoryEmptyState";
 
 function CategoryManager() {
@@ -18,7 +18,6 @@ function CategoryManager() {
   const [showForm, setShowForm] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState(null);
-  const [categoryTasks, setCategoryTasks] = useState([]);
   const [showModal, setShowModal] = useState(false);
 
   // Handlers
@@ -44,12 +43,10 @@ function CategoryManager() {
     setShowForm(true);
   };
 
-  const handleViewTasks = (category) => {
-    setSelectedCategory(category);
-    setShowModal(true);
-    setCategoryTasks(category.tasks || []);
-  };
-
+  const handleViewProjects = (category) => {
+  setSelectedCategory(category);
+  setShowModal(true);
+};
   const handleDelete = async (id) => {
     if (!window.confirm("Bu kategoriyi silmek istediğinizden emin misiniz?")) {
       return;
@@ -101,7 +98,7 @@ function CategoryManager() {
               category={category}
               onEdit={handleEdit}
               onDelete={handleDelete}
-              onViewTasks={handleViewTasks}
+              onViewProjects={handleViewProjects}
             />
           ))}
         </div>
@@ -109,9 +106,8 @@ function CategoryManager() {
 
       {/* Tasks Modal */}
       {showModal && selectedCategory && (
-        <CategoryTasksModal
+        <CategoryProjectsModal
           category={selectedCategory}
-          tasks={categoryTasks}
           onClose={() => setShowModal(false)}
         />
       )}
