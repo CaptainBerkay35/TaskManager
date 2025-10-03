@@ -30,7 +30,9 @@ namespace TaskManager.API.Controllers
         {
             var userId = GetUserId();
             var categories = await _context.Categories
-                // .Include(c => c.Tasks) KALDIRILDI - Artık Tasks navigation property yok
+                .Include(c => c.ProjectCategories)           // ← Junction table
+                    .ThenInclude(pc => pc.Project)           // ← Project'i çek
+                        .ThenInclude(p => p.Tasks)           // ← Task count için (opsiyonel)
                 .Where(c => c.UserId == userId)
                 .ToListAsync();
 
