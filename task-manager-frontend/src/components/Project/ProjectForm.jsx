@@ -20,18 +20,17 @@ function ProjectForm({
     "#3B82F6", "#EF4444", "#10B981", "#F59E0B",
     "#8B5CF6", "#EC4899", "#06B6D4", "#84CC16",
   ];
+const handleSubmit = (e) => {
+  e.preventDefault();
+  
+  // ✅ Validasyon sadece submit sırasında
+  if (!formData.categoryIds || formData.categoryIds.length === 0) {
+    alert('Lütfen en az 1 kategori seçin!');
+    return;
+  }
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    
-    if (!formData.categoryIds || formData.categoryIds.length === 0) {
-      alert('Lütfen en az 1 kategori seçin!');
-      return;
-    }
-
-    onSubmit(formData);
-  };
-
+  onSubmit(formData);
+};
   return (
     <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-700">
       <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
