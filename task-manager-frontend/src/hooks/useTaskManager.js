@@ -32,38 +32,50 @@ export function useTaskManager() {
   }, [fetchTasks]);
 
   const toggleComplete = useCallback(async (task) => {
-    try {
-      const updatedTask = {
-        ...task,
-        isCompleted: !task.isCompleted,
-        status: !task.isCompleted ? "Tamamlandı" : "Devam Ediyor",
-        completedDate: !task.isCompleted ? new Date().toISOString() : null,
-      };
-      await tasksAPI.update(task.id, updatedTask);
-      await fetchTasks();
-      return { success: true };
-    } catch (err) {
-      console.error("Güncelleme hatası:", err);
-      return { success: false, error: err.message };
-    }
-  }, [fetchTasks]);
+  try {
+    const updatedTask = {
+      id: task.id,
+      title: task.title,
+      description: task.description || "",
+      priority: task.priority || 2,
+      projectId: task.projectId || task.project?.id, // ✅ Bu satır önemli
+      dueDate: task.dueDate || null,
+      isCompleted: !task.isCompleted,
+      status: !task.isCompleted ? "Tamamlandı" : "Devam Ediyor",
+      completedDate: !task.isCompleted ? new Date().toISOString() : null,
+    };
+    
+    await tasksAPI.update(task.id, updatedTask);
+    await fetchTasks();
+    return { success: true };
+  } catch (err) {
+    console.error("Güncelleme hatası:", err.response?.data || err.message);
+    return { success: false, error: err.response?.data || err.message };
+  }
+}, [fetchTasks]);
 
   const updateTaskStatus = useCallback(async (task, newStatus) => {
-    try {
-      const updatedTask = {
-        ...task,
-        status: newStatus,
-        isCompleted: newStatus === "Tamamlandı",
-        completedDate: newStatus === "Tamamlandı" ? new Date().toISOString() : null,
-      };
-      await tasksAPI.update(task.id, updatedTask);
-      await fetchTasks();
-      return { success: true };
-    } catch (err) {
-      console.error("Durum güncelleme hatası:", err);
-      return { success: false, error: err.message };
-    }
-  }, [fetchTasks]);
+  try {
+    const updatedTask = {
+      id: task.id,
+      title: task.title,
+      description: task.description || "",
+      priority: task.priority || 2,
+      projectId: task.projectId || task.project?.id, // ✅ Bu satır önemli
+      dueDate: task.dueDate || null,
+      status: newStatus,
+      isCompleted: newStatus === "Tamamlandı",
+      completedDate: newStatus === "Tamamlandı" ? new Date().toISOString() : task.completedDate,
+    };
+    
+    await tasksAPI.update(task.id, updatedTask);
+    await fetchTasks();
+    return { success: true };
+  } catch (err) {
+    console.error("Durum güncelleme hatası:", err.response?.data || err.message);
+    return { success: false, error: err.response?.data || err.message };
+  }
+}, [fetchTasks]);
 
   useEffect(() => {
     fetchTasks();

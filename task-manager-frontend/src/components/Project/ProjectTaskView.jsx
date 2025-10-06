@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react';
-import { tasksAPI, projectsAPI } from '../../services/api';
-import TaskCard from '../Task/TaskCard';
-import TaskForm from '../Task/TaskForm';
-import TaskFilters from '../Task/TaskFilters';
-import ConfirmDialog from '../ConfirmDialog';
+import { useState, useEffect } from "react";
+import { tasksAPI, projectsAPI } from "../../services/api";
+import TaskCard from "../Task/TaskCard";
+import TaskForm from "../Task/TaskForm";
+import TaskFilters from "../Task/TaskFilters";
+import ConfirmDialog from "../ConfirmDialog";
 
 function ProjectTaskView({ projectId }) {
   const [tasks, setTasks] = useState([]);
@@ -11,7 +11,11 @@ function ProjectTaskView({ projectId }) {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
-  const [deleteConfirm, setDeleteConfirm] = useState({ show: false, taskId: null, taskTitle: "" });
+  const [deleteConfirm, setDeleteConfirm] = useState({
+    show: false,
+    taskId: null,
+    taskTitle: "",
+  });
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterPriority, setFilterPriority] = useState("all");
@@ -30,13 +34,15 @@ function ProjectTaskView({ projectId }) {
       setLoading(true);
       const [projectRes, tasksRes] = await Promise.all([
         projectsAPI.getById(projectId),
-        tasksAPI.getAll()
+        tasksAPI.getAll(),
       ]);
       setProject(projectRes.data);
-      const projectTasks = tasksRes.data.filter(t => t.projectId === projectId);
+      const projectTasks = tasksRes.data.filter(
+        (t) => t.projectId === projectId
+      );
       setTasks(projectTasks);
     } catch (err) {
-      console.error('Hata:', err);
+      console.error("Hata:", err);
     } finally {
       setLoading(false);
     }
@@ -49,7 +55,7 @@ function ProjectTaskView({ projectId }) {
       setTasks(response.data);
       setProject(null);
     } catch (err) {
-      console.error('Görevler yüklenemedi:', err);
+      console.error("Görevler yüklenemedi:", err);
     } finally {
       setLoading(false);
     }
@@ -64,7 +70,7 @@ function ProjectTaskView({ projectId }) {
     setDeleteConfirm({
       show: true,
       taskId: task.id,
-      taskTitle: task.title
+      taskTitle: task.title,
     });
   };
 
@@ -99,7 +105,8 @@ function ProjectTaskView({ projectId }) {
         ...task,
         status: newStatus,
         isCompleted: newStatus === "Tamamlandı",
-        completedDate: newStatus === "Tamamlandı" ? new Date().toISOString() : null,
+        completedDate:
+          newStatus === "Tamamlandı" ? new Date().toISOString() : null,
       };
       await tasksAPI.update(task.id, updatedTask);
       projectId ? fetchProjectAndTasks() : fetchAllTasks();
@@ -111,15 +118,20 @@ function ProjectTaskView({ projectId }) {
   const filteredTasks = tasks.filter((task) => {
     const matchesSearch =
       task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (task.description && task.description.toLowerCase().includes(searchTerm.toLowerCase()));
-    const matchesStatus = filterStatus === "all" || task.status === filterStatus;
-    const matchesPriority = filterPriority === "all" || task.priority === parseInt(filterPriority);
-    const matchesCategory = filterCategory === "all" || task.categoryId === parseInt(filterCategory);
+      (task.description &&
+        task.description.toLowerCase().includes(searchTerm.toLowerCase()));
+    const matchesStatus =
+      filterStatus === "all" || task.status === filterStatus;
+    const matchesPriority =
+      filterPriority === "all" || task.priority === parseInt(filterPriority);
+    const matchesCategory =
+      filterCategory === "all" || task.categoryId === parseInt(filterCategory);
     return matchesSearch && matchesStatus && matchesPriority && matchesCategory;
   });
 
-  const completedTasks = tasks.filter(t => t.status === 'Tamamlandı').length;
-  const progressPercentage = tasks.length > 0 ? Math.round((completedTasks / tasks.length) * 100) : 0;
+  const completedTasks = tasks.filter((t) => t.status === "Tamamlandı").length;
+  const progressPercentage =
+    tasks.length > 0 ? Math.round((completedTasks / tasks.length) * 100) : 0;
 
   if (loading) {
     return (
@@ -133,14 +145,24 @@ function ProjectTaskView({ projectId }) {
     <div className="space-y-4">
       {/* Project Header */}
       {project && (
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border-l-4" style={{ borderLeftColor: project.color }}>
+        <div
+          className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border-l-4"
+          style={{ borderLeftColor: project.color }}
+        >
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
-              <div className="w-4 h-4 rounded-full" style={{ backgroundColor: project.color }} />
+              <div
+                className="w-4 h-4 rounded-full"
+                style={{ backgroundColor: project.color }}
+              />
               <div>
-                <h2 className="text-2xl font-bold text-gray-800 dark:text-white">{project.name}</h2>
+                <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
+                  {project.name}
+                </h2>
                 {project.description && (
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{project.description}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                    {project.description}
+                  </p>
                 )}
               </div>
             </div>
@@ -148,13 +170,18 @@ function ProjectTaskView({ projectId }) {
               <p className="text-sm text-gray-500 dark:text-gray-400">
                 {completedTasks}/{tasks.length} görev tamamlandı
               </p>
-              <p className="text-2xl font-bold text-gray-800 dark:text-white">%{progressPercentage}</p>
+              <p className="text-2xl font-bold text-gray-800 dark:text-white">
+                %{progressPercentage}
+              </p>
             </div>
           </div>
           <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
             <div
               className="h-2 rounded-full transition-all"
-              style={{ width: `${progressPercentage}%`, backgroundColor: project.color }}
+              style={{
+                width: `${progressPercentage}%`,
+                backgroundColor: project.color,
+              }}
             />
           </div>
         </div>
@@ -163,7 +190,7 @@ function ProjectTaskView({ projectId }) {
       {/* Task Header */}
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
-          {project ? `${project.name} Görevleri` : 'Tüm Görevler'}
+          {project ? `${project.name} Görevleri` : "Tüm Görevler"}
         </h2>
         <button
           onClick={() => setShowForm(true)}
@@ -188,16 +215,29 @@ function ProjectTaskView({ projectId }) {
       {/* Tasks List */}
       {tasks.length === 0 ? (
         <div className="text-center py-16 bg-gray-50 dark:bg-gray-800 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600">
-          <svg className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+          <svg
+            className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500 mb-4"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+            />
           </svg>
           <p className="text-gray-500 dark:text-gray-400 font-medium">
-            {project ? 'Bu projede henüz görev yok.' : 'Henüz görev yok.'} Yeni görev ekleyin!
+            {project ? "Bu projede henüz görev yok." : "Henüz görev yok."} Yeni
+            görev ekleyin!
           </p>
         </div>
       ) : filteredTasks.length === 0 ? (
         <div className="text-center py-12 bg-gray-50 dark:bg-gray-800 rounded-lg">
-          <p className="text-gray-500 dark:text-gray-400">Filtrelere uygun görev bulunamadı.</p>
+          <p className="text-gray-500 dark:text-gray-400">
+            Filtrelere uygun görev bulunamadı.
+          </p>
         </div>
       ) : (
         <div className="grid gap-4">
@@ -214,14 +254,13 @@ function ProjectTaskView({ projectId }) {
         </div>
       )}
 
-      {/* Task Form Modal */}
       {showForm && (
         <TaskForm
           onClose={() => {
             setShowForm(false);
             setEditingTask(null);
           }}
-          onSuccess={() => {
+          onRefresh={() => {
             projectId ? fetchProjectAndTasks() : fetchAllTasks();
             if (window.refreshProjectSidebar) window.refreshProjectSidebar();
           }}
@@ -237,7 +276,9 @@ function ProjectTaskView({ projectId }) {
         confirmText="Sil"
         cancelText="İptal"
         onConfirm={handleDeleteConfirm}
-        onCancel={() => setDeleteConfirm({ show: false, taskId: null, taskTitle: "" })}
+        onCancel={() =>
+          setDeleteConfirm({ show: false, taskId: null, taskTitle: "" })
+        }
       />
     </div>
   );

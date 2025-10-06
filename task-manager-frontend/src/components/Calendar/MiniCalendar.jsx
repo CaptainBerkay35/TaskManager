@@ -53,41 +53,65 @@ function MiniCalendar() {
     return days;
   };
 
-  // Belirli bir gündeki öğe sayısı (task + project)
-  const getItemsForDate = (date) => {
-    if (!date) return { taskCount: 0, projectCount: 0, total: 0 };
-    
-    const dateStr = new Date(
-      currentDate.getFullYear(),
-      currentDate.getMonth(),
-      date
-    ).toISOString().split('T')[0];
-    
-    const taskCount = tasks.filter(task => 
-      task.dueDate && task.dueDate.startsWith(dateStr)
-    ).length;
-
-    const projectCount = projects.filter(project => 
-      project.deadline && project.deadline.startsWith(dateStr)
-    ).length;
-
-    return { taskCount, projectCount, total: taskCount + projectCount };
-  };
-
-  // Seçili tarihteki task'ler ve projeler
-  const getSelectedDateItems = () => {
-    const dateStr = selectedDate.toISOString().split('T')[0];
-    
-    const dateTasks = tasks.filter(task => 
-      task.dueDate && task.dueDate.startsWith(dateStr)
+const getItemsForDate = (date) => {
+  if (!date) return { taskCount: 0, projectCount: 0, total: 0 };
+  
+  // ✅ Local timezone'da tarih oluştur
+  const targetDate = new Date(
+    currentDate.getFullYear(),
+    currentDate.getMonth(),
+    date,
+    0, 0, 0, 0
+  );
+  
+  const taskCount = tasks.filter(task => {
+    if (!task.dueDate) return false;
+    // Backend'den gelen UTC tarihini local'e çevir
+    const taskDate = new Date(task.dueDate);
+    // Sadece yıl-ay-gün karşılaştır
+    return (
+      taskDate.getFullYear() === targetDate.getFullYear() &&
+      taskDate.getMonth() === targetDate.getMonth() &&
+      taskDate.getDate() === targetDate.getDate()
     );
+  }).length;
 
-    const dateProjects = projects.filter(project => 
-      project.deadline && project.deadline.startsWith(dateStr)
+  const projectCount = projects.filter(project => {
+    if (!project.deadline) return false;
+    const projectDate = new Date(project.deadline);
+    return (
+      projectDate.getFullYear() === targetDate.getFullYear() &&
+      projectDate.getMonth() === targetDate.getMonth() &&
+      projectDate.getDate() === targetDate.getDate()
     );
+  }).length;
 
-    return { tasks: dateTasks, projects: dateProjects };
-  };
+  return { taskCount, projectCount, total: taskCount + projectCount };
+};
+
+const getSelectedDateItems = () => {
+  const dateTasks = tasks.filter(task => {
+    if (!task.dueDate) return false;
+    const taskDate = new Date(task.dueDate);
+    return (
+      taskDate.getFullYear() === selectedDate.getFullYear() &&
+      taskDate.getMonth() === selectedDate.getMonth() &&
+      taskDate.getDate() === selectedDate.getDate()
+    );
+  });
+
+  const dateProjects = projects.filter(project => {
+    if (!project.deadline) return false;
+    const projectDate = new Date(project.deadline);
+    return (
+      projectDate.getFullYear() === selectedDate.getFullYear() &&
+      projectDate.getMonth() === selectedDate.getMonth() &&
+      projectDate.getDate() === selectedDate.getDate()
+    );
+  });
+
+  return { tasks: dateTasks, projects: dateProjects };
+};
 
   const days = getDaysInMonth(currentDate);
   const monthNames = [

@@ -1,19 +1,20 @@
-import { useState, useEffect } from 'react';
-import { tasksAPI } from '../../services/api';
-import TaskCard from '../Task/TaskCard';
+import { useState, useEffect } from "react";
+import { tasksAPI } from "../../services/api";
+import TaskCard from "../Task/TaskCard";
 import RichTextEditor from "../RichTextEditor";
-import TaskForm from '../Task/TaskForm';
+import TaskForm from "../Task/TaskForm";
 
 function ProjectDetailModal({ project, onClose, onTaskUpdate }) {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showTaskForm, setShowTaskForm] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
+  const [deadlineError, setDeadlineError] = useState("");
   const [formData, setFormData] = useState({
-    title: '',
-    description: '',
+    title: "",
+    description: "",
     priority: 2,
-    dueDate: '',
+    dueDate: "",
   });
 
   useEffect(() => {
@@ -24,10 +25,12 @@ function ProjectDetailModal({ project, onClose, onTaskUpdate }) {
     try {
       setLoading(true);
       const response = await tasksAPI.getAll();
-      const projectTasks = response.data.filter(task => task.projectId === project.id);
+      const projectTasks = response.data.filter(
+        (task) => task.projectId === project.id
+      );
       setTasks(projectTasks);
     } catch (err) {
-      console.error('Görevler yüklenemedi:', err);
+      console.error("Görevler yüklenemedi:", err);
     } finally {
       setLoading(false);
     }
@@ -36,36 +39,77 @@ function ProjectDetailModal({ project, onClose, onTaskUpdate }) {
     setEditingTask(task);
     setShowTaskForm(true);
   };
+  const handleDueDateChange = (e) => {
+    const newDueDate = e.target.value;
+
+    if (newDueDate && project.deadline) {
+      const dueDate = new Date(newDueDate);
+      const projectDeadline = new Date(project.deadline);
+
+      if (dueDate > projectDeadline) {
+        setDeadlineError(
+          `Görev tarihi, projenin son teslim tarihinden (${projectDeadline.toLocaleDateString(
+            "tr-TR"
+          )}) sonra olamaz!`
+        );
+      } else {
+        setDeadlineError("");
+      }
+    } else {
+      setDeadlineError("");
+    }
+
+    setFormData({ ...formData, dueDate: newDueDate });
+  };
+
+  const getMaxDate = () => {
+    if (!project.deadline) return "";
+    return project.deadline.split("T")[0];
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (deadlineError) {
+      alert("Lütfen geçerli bir son teslim tarihi girin.");
+      return;
+    }
+
+    if (!formData.title.trim()) {
+      alert("Lütfen görev başlığı girin.");
+      return;
+    }
 
     try {
       const taskData = {
         ...formData,
         projectId: project.id, // ProjectId otomatik ekleniyor
-        status: 'Devam Ediyor',
+        status: "Devam Ediyor",
         dueDate: formData.dueDate || null,
       };
 
       await tasksAPI.create(taskData);
-      setFormData({ title: '', description: '', priority: 2, dueDate: '' });
+      setFormData({ title: "", description: "", priority: 2, dueDate: "" });
       setShowTaskForm(false);
       fetchProjectTasks();
       if (onTaskUpdate) onTaskUpdate();
     } catch (err) {
-      alert('Hata: ' + (err.response?.data || err.message));
+      alert("Hata: " + (err.response?.data || err.message));
     }
   };
 
   const handleDeleteTask = async (task) => {
-    if (window.confirm(`"${task.title}" görevini silmek istediğinizden emin misiniz?`)) {
+    if (
+      window.confirm(
+        `"${task.title}" görevini silmek istediğinizden emin misiniz?`
+      )
+    ) {
       try {
         await tasksAPI.delete(task.id);
         fetchProjectTasks();
         if (onTaskUpdate) onTaskUpdate();
       } catch (err) {
-        alert('Silme hatası: ' + err.message);
+        alert("Silme hatası: " + err.message);
       }
     }
   };
@@ -92,7 +136,8 @@ function ProjectDetailModal({ project, onClose, onTaskUpdate }) {
         ...task,
         status: newStatus,
         isCompleted: newStatus === "Tamamlandı",
-        completedDate: newStatus === "Tamamlandı" ? new Date().toISOString() : null,
+        completedDate:
+          newStatus === "Tamamlandı" ? new Date().toISOString() : null,
       };
       await tasksAPI.update(task.id, updatedTask);
       fetchProjectTasks();
@@ -102,30 +147,43 @@ function ProjectDetailModal({ project, onClose, onTaskUpdate }) {
     }
   };
 
-  const completedTasks = tasks.filter(t => t.status === 'Tamamlandı').length;
-  const progressPercentage = tasks.length > 0 ? Math.round((completedTasks / tasks.length) * 100) : 0;
+  const completedTasks = tasks.filter((t) => t.status === "Tamamlandı").length;
+  const progressPercentage =
+    tasks.length > 0 ? Math.round((completedTasks / tasks.length) * 100) : 0;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="p-6 border-b border-gray-200 dark:border-gray-700" style={{ borderLeftWidth: '4px', borderLeftColor: project.color }}>
+        <div
+          className="p-6 border-b border-gray-200 dark:border-gray-700"
+          style={{ borderLeftWidth: "4px", borderLeftColor: project.color }}
+        >
           <div className="flex justify-between items-start">
             <div className="flex items-center gap-3">
-              <div className="w-3 h-3 rounded-full" style={{ backgroundColor: project.color }} />
+              <div
+                className="w-3 h-3 rounded-full"
+                style={{ backgroundColor: project.color }}
+              />
               <div>
-                <h2 className="text-2xl font-bold text-gray-800 dark:text-white">{project.name}</h2>
+                <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
+                  {project.name}
+                </h2>
                 {project.description && (
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{project.description}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                    {project.description}
+                  </p>
                 )}
                 {project.category && (
                   <div className="flex items-center gap-2 mt-2">
-                    <span className="text-xs text-gray-500 dark:text-gray-400">Kategori:</span>
-                    <span 
+                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                      Kategori:
+                    </span>
+                    <span
                       className="text-xs px-2 py-1 rounded-full font-medium"
-                      style={{ 
-                        backgroundColor: project.category.color + '20',
-                        color: project.category.color 
+                      style={{
+                        backgroundColor: project.category.color + "20",
+                        color: project.category.color,
                       }}
                     >
                       {project.category.name}
@@ -138,8 +196,18 @@ function ProjectDetailModal({ project, onClose, onTaskUpdate }) {
               onClick={onClose}
               className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition"
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
             </button>
           </div>
@@ -157,7 +225,10 @@ function ProjectDetailModal({ project, onClose, onTaskUpdate }) {
             <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
               <div
                 className="h-2 rounded-full transition-all"
-                style={{ width: `${progressPercentage}%`, backgroundColor: project.color }}
+                style={{
+                  width: `${progressPercentage}%`,
+                  backgroundColor: project.color,
+                }}
               />
             </div>
           </div>
@@ -166,12 +237,14 @@ function ProjectDetailModal({ project, onClose, onTaskUpdate }) {
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-6">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-semibold text-gray-800 dark:text-white">Görevler</h3>
+            <h3 className="text-lg font-semibold text-gray-800 dark:text-white">
+              Görevler
+            </h3>
             <button
               onClick={() => setShowTaskForm(!showTaskForm)}
               className="text-sm px-4 py-2 bg-indigo-600 dark:bg-indigo-500 text-white rounded-lg hover:bg-indigo-700 dark:hover:bg-indigo-600 transition"
             >
-              {showTaskForm ? 'İptal' : '+ Görev Ekle'}
+              {showTaskForm ? "İptal" : "+ Görev Ekle"}
             </button>
           </div>
 
@@ -186,14 +259,18 @@ function ProjectDetailModal({ project, onClose, onTaskUpdate }) {
                     type="text"
                     required
                     value={formData.title}
-                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, title: e.target.value })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-600 text-gray-800 dark:text-white"
                     placeholder="Görev başlığı"
                   />
                 </div>
                 <RichTextEditor
                   value={formData.description}
-                  onChange={(value) => setFormData({ ...formData, description: value })}
+                  onChange={(value) =>
+                    setFormData({ ...formData, description: value })
+                  }
                   label="Açıklama"
                   placeholder="Görev detaylarını yazın...&#10;&#10;"
                   rows={4}
@@ -208,7 +285,12 @@ function ProjectDetailModal({ project, onClose, onTaskUpdate }) {
                     </label>
                     <select
                       value={formData.priority}
-                      onChange={(e) => setFormData({ ...formData, priority: parseInt(e.target.value) })}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          priority: parseInt(e.target.value),
+                        })
+                      }
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-600 text-gray-800 dark:text-white"
                     >
                       <option value={1}>Düşük</option>
@@ -224,14 +306,26 @@ function ProjectDetailModal({ project, onClose, onTaskUpdate }) {
                     <input
                       type="date"
                       value={formData.dueDate}
-                      onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-600 text-gray-800 dark:text-white"
+                      onChange={handleDueDateChange}
+                      max={getMaxDate()}
+                      className={`w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-600 text-gray-800 dark:text-white ${
+                        deadlineError
+                          ? "border-red-500"
+                          : "border-gray-300 dark:border-gray-600"
+                      }`}
                     />
+                    {deadlineError && (
+                      <p className="text-xs text-red-600 dark:text-red-400 mt-1">
+                        {deadlineError}
+                      </p>
+                    )}
                   </div>
                 </div>
                 <div className="bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800 rounded-lg p-3">
                   <p className="text-xs text-indigo-700 dark:text-indigo-300">
-                    ℹ️ Bu görev otomatik olarak "<span className="font-semibold">{project.name}</span>" projesine eklenecek
+                    ℹ️ Bu görev otomatik olarak "
+                    <span className="font-semibold">{project.name}</span>"
+                    projesine eklenecek
                   </p>
                 </div>
                 <button
@@ -250,8 +344,18 @@ function ProjectDetailModal({ project, onClose, onTaskUpdate }) {
             </div>
           ) : tasks.length === 0 ? (
             <div className="text-center py-12 bg-gray-50 dark:bg-gray-700 rounded-lg">
-              <svg className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+              <svg
+                className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500 mb-3"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                />
               </svg>
               <p className="text-gray-500 dark:text-gray-400">
                 Bu projede henüz görev yok. Yukarıdan görev ekleyin!
@@ -273,14 +377,14 @@ function ProjectDetailModal({ project, onClose, onTaskUpdate }) {
           )}
         </div>
       </div>
-       {/* TaskForm Modal için - Edit durumunda */}
+      {/* TaskForm Modal için - Edit durumunda */}
       {showTaskForm && editingTask && (
         <TaskForm
           onClose={() => {
             setShowTaskForm(false);
             setEditingTask(null);
           }}
-          onSuccess={() => {
+          onRefresh={() => {
             fetchProjectTasks();
             if (onTaskUpdate) onTaskUpdate();
           }}

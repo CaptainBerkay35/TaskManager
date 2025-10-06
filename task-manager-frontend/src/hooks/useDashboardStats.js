@@ -52,11 +52,14 @@ export function useDashboardStats(tasks, projects, categories) {
 
     // Kategori dağılımı
     const projectsByCategory = categories
-      .map(cat => ({
-        ...cat,
-        projectCount: projects.filter(p => p.categoryId === cat.id).length
-      }))
-      .filter(c => c.projectCount > 0);
+  .map(cat => ({
+    ...cat,
+    projectCount: projects.filter(p => 
+      p.categories && 
+      p.categories.some(c => c.id === cat.id)
+    ).length
+  }))
+  .filter(c => c.projectCount > 0);
 
     return {
       totalProjects,
