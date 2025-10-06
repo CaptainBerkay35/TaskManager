@@ -11,7 +11,6 @@ export function useCategoryManager() {
       setLoading(true);
       setError(null);
       const response = await categoriesAPI.getAll();
-      console.log("Backend'den gelen RAW data:", response.data);
       setCategories(response.data);
     } catch (err) {
       console.error("Kategoriler yüklenemedi:", err);
