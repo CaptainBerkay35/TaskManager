@@ -5,11 +5,7 @@ function MultiSelectCategories({ categories, selectedIds, onChange, required = f
 
   const toggleCategory = (categoryId) => {
     if (selectedIds.includes(categoryId)) {
-      // Son kategoriyi silmeye çalışıyorsa ve required ise engelle
-      if (required && selectedIds.length === 1) {
-        alert('En az 1 kategori seçili olmalıdır!');
-        return;
-      }
+      // ✅ FIX: Sadece submit sırasında kontrol et, seçim sırasında değil
       onChange(selectedIds.filter(id => id !== categoryId));
     } else {
       onChange([...selectedIds, categoryId]);
@@ -18,10 +14,7 @@ function MultiSelectCategories({ categories, selectedIds, onChange, required = f
 
   const removeCategory = (categoryId, e) => {
     e.stopPropagation();
-    if (required && selectedIds.length === 1) {
-      alert('En az 1 kategori seçili olmalıdır!');
-      return;
-    }
+    // ✅ FIX: Uyarı kaldırıldı - kullanıcı istediği gibi değiştirebilir
     onChange(selectedIds.filter(id => id !== categoryId));
   };
 
@@ -76,50 +69,33 @@ function MultiSelectCategories({ categories, selectedIds, onChange, required = f
           {/* Options */}
           <div className="absolute z-20 w-full mt-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-60 overflow-y-auto">
             {categories.length === 0 ? (
-              <div className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">
+              <div className="p-4 text-sm text-gray-500 dark:text-gray-400 text-center">
                 Henüz kategori yok
               </div>
             ) : (
-              categories.map((cat) => {
-                const isSelected = selectedIds.includes(cat.id);
-                return (
+              categories.map((cat) => (
+                <div
+                  key={cat.id}
+                  onClick={() => toggleCategory(cat.id)}
+                  className={`flex items-center gap-3 px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer transition ${
+                    selectedIds.includes(cat.id) ? 'bg-indigo-50 dark:bg-indigo-900/30' : ''
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={selectedIds.includes(cat.id)}
+                    onChange={() => {}} // Handled by parent onClick
+                    className="w-4 h-4 text-indigo-600 dark:text-indigo-500 rounded focus:ring-2 focus:ring-indigo-500"
+                  />
                   <div
-                    key={cat.id}
-                    onClick={() => toggleCategory(cat.id)}
-                    className={`px-4 py-2 cursor-pointer transition flex items-center gap-3 ${
-                      isSelected
-                        ? 'bg-indigo-50 dark:bg-indigo-900/30'
-                        : 'hover:bg-gray-50 dark:hover:bg-gray-600'
-                    }`}
-                  >
-                    {/* Checkbox */}
-                    <div
-                      className={`w-5 h-5 rounded border-2 flex items-center justify-center transition ${
-                        isSelected
-                          ? 'bg-indigo-600 border-indigo-600'
-                          : 'border-gray-300 dark:border-gray-500'
-                      }`}
-                    >
-                      {isSelected && (
-                        <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                        </svg>
-                      )}
-                    </div>
-
-                    {/* Category Color & Name */}
-                    <div className="flex items-center gap-2 flex-1">
-                      <div
-                        className="w-3 h-3 rounded-full"
-                        style={{ backgroundColor: cat.color }}
-                      />
-                      <span className="text-sm text-gray-800 dark:text-white">
-                        {cat.name}
-                      </span>
-                    </div>
-                  </div>
-                );
-              })
+                    className="w-4 h-4 rounded-full"
+                    style={{ backgroundColor: cat.color }}
+                  />
+                  <span className="text-sm text-gray-800 dark:text-gray-200">
+                    {cat.name}
+                  </span>
+                </div>
+              ))
             )}
           </div>
         </>

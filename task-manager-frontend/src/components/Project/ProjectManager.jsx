@@ -6,6 +6,7 @@ import ProjectCard from './ProjectCard';
 import ProjectFilters from './ProjectFilters';
 import ProjectDetailModal from './ProjectDetailModal';
 import ConfirmDialog from '../ConfirmDialog';
+import Toast from '../Toast'; // ✅ YENİ
 import { EmptyProjectsState, NoFilterResultsState, LoadingState } from './ProjectEmptyStates';
 
 function ProjectManager() {
@@ -17,7 +18,6 @@ function ProjectManager() {
     createProject,
     updateProject,
     deleteProject,
-    refetch, // ← Projeleri yeniden yüklemek için
   } = useProjectManager();
 
   const {
@@ -40,6 +40,13 @@ function ProjectManager() {
     projectName: "",
     taskCount: 0,
   });
+  
+  // ✅ YENİ: Toast state
+  const [toast, setToast] = useState({
+    show: false,
+    message: '',
+    type: 'success',
+  });
 
   // Form handlers
   const handleFormSubmit = async (formData) => {
@@ -49,6 +56,12 @@ function ProjectManager() {
 
     if (result.success) {
       handleFormCancel();
+      // ✅ YENİ: Başarı toast'ı göster
+      setToast({
+        show: true,
+        message: editingProject ? 'Proje güncellendi!' : 'Proje oluşturuldu!',
+        type: 'success',
+      });
     } else {
       alert("Hata: " + result.error);
     }
@@ -56,11 +69,17 @@ function ProjectManager() {
 
   const handleFormCancel = () => {
     setShowForm(false);
-    setEditingProject(null);
+    setEditingProject(null); // ✅ FIX: Editing state'i temizle
   };
 
   const handleEdit = (project) => {
     setEditingProject(project);
+    setShowForm(true);
+  };
+
+  // ✅ YENİ: Yeni proje butonuna basınca editing'i temizle
+  const handleNewProject = () => {
+    setEditingProject(null); // ✅ FIX: Önce temizle
     setShowForm(true);
   };
 
@@ -75,14 +94,21 @@ function ProjectManager() {
   };
 
   const handleDeleteConfirm = async () => {
+    const projectName = deleteConfirm.projectName;
+    const taskCount = deleteConfirm.taskCount;
+    
     const result = await deleteProject(deleteConfirm.projectId);
     
-    if (result.success && result.data) {
-      const message = result.data.deletedTasksCount > 0
-        ? `"${result.data.projectName}" projesi ve ${result.data.deletedTasksCount} görevi silindi.`
-        : `"${result.data.projectName}" projesi silindi.`;
-      alert(message);
-    } else if (!result.success) {
+    if (result.success) {
+      // ✅ YENİ: Toast ile bildir
+      setToast({
+        show: true,
+        message: taskCount > 0 
+          ? `"${projectName}" projesi ve ${taskCount} görevi silindi`
+          : `"${projectName}" projesi silindi`,
+        type: 'success',
+      });
+    } else {
       alert("Silme hatası: " + result.error);
     }
 
@@ -103,19 +129,6 @@ function ProjectManager() {
     });
   };
 
-  // ✅ Task güncellendiğinde projeleri yeniden yükle
-  const handleTaskUpdate = async () => {
-    const freshProjects = await refetch(); // Returns fresh data
-    
-    // Modal açıksa, güncel project bilgisini güncelle
-    if (selectedProject && freshProjects) {
-      const updatedProject = freshProjects.find(p => p.id === selectedProject.id);
-      if (updatedProject) {
-        setSelectedProject(updatedProject);
-      }
-    }
-  };
-
   // Loading state
   if (loading) {
     return <LoadingState />;
@@ -126,27 +139,13 @@ function ProjectManager() {
       {/* Header */}
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
-          📁 Projeler
+          Projeler
         </h2>
         <button
-          onClick={() => setShowForm(!showForm)}
-          className="bg-indigo-600 dark:bg-indigo-500 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 dark:hover:bg-indigo-600 transition flex items-center gap-2"
+          onClick={handleNewProject} // ✅ FIX: Yeni fonksiyon kullan
+          className="bg-indigo-600 dark:bg-indigo-500 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 dark:hover:bg-indigo-600 transition"
         >
-          {showForm ? (
-            <>
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-              İptal
-            </>
-          ) : (
-            <>
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
-              Yeni Proje
-            </>
-          )}
+          {showForm && !editingProject ? "İptal" : "+ Yeni Proje"}
         </button>
       </div>
 
@@ -212,9 +211,18 @@ function ProjectManager() {
         <ProjectDetailModal
           project={selectedProject}
           onClose={() => setSelectedProject(null)}
-          onTaskUpdate={handleTaskUpdate} // ✅ Artık gerçek fonksiyon
+          onTaskUpdate={() => {}} // Refetch handled by hook
         />
       )}
+
+      {/* ✅ YENİ: Toast Notification */}
+      <Toast
+        message={toast.message}
+        type={toast.type}
+        isOpen={toast.show}
+        onClose={() => setToast({ ...toast, show: false })}
+        duration={3000}
+      />
     </div>
   );
 }
