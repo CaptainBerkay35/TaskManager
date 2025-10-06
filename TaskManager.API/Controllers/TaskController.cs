@@ -73,6 +73,15 @@ namespace TaskManager.API.Controllers
                 return BadRequest("Geçersiz proje seçimi.");
             }
 
+            // ✅ Deadline kontrolü ekle
+            if (taskItem.DueDate.HasValue && project.Deadline.HasValue)
+            {
+                if (taskItem.DueDate.Value.Date > project.Deadline.Value.Date)
+                {
+                    return BadRequest($"Görev son tarihi, projenin bitiş tarihinden ({project.Deadline.Value:dd.MM.yyyy}) sonra olamaz.");
+                }
+            }
+
             taskItem.UserId = userId;
             _context.Tasks.Add(taskItem);
             await _context.SaveChangesAsync();
@@ -108,6 +117,15 @@ namespace TaskManager.API.Controllers
             if (project == null || project.UserId != userId)
             {
                 return BadRequest("Geçersiz proje seçimi.");
+            }
+
+            // ✅ Deadline kontrolü ekle
+            if (taskItem.DueDate.HasValue && project.Deadline.HasValue)
+            {
+                if (taskItem.DueDate.Value.Date > project.Deadline.Value.Date)
+                {
+                    return BadRequest($"Görev son tarihi, projenin bitiş tarihinden ({project.Deadline.Value:dd.MM.yyyy}) sonra olamaz.");
+                }
             }
 
             // UserId değişmesin
