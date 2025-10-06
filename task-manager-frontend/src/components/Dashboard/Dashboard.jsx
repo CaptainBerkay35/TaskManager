@@ -10,11 +10,6 @@ import { useEffect } from 'react';
 function Dashboard() {
   const { tasks, projects, categories, loading, error } = useDashboardData();
   const stats = useDashboardStats(tasks, projects, categories);
-  useEffect(() => {
-    if (projects.length > 0) {
-      console.log("İlk proje:", projects[0]);
-console.log("İlk projenin kategorileri:", projects[0].categories);    }
-  }, [projects]);
 
   if (loading) {
     return (

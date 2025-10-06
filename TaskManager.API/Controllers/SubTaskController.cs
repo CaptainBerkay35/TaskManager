@@ -59,6 +59,15 @@ namespace TaskManager.API.Controllers
                 return BadRequest("Bu göreve alt görev ekleyemezsiniz.");
             }
 
+            // ✅ YENİ: Alt görev tarihini kontrol et - Task deadline'ından sonra olamaz
+            if (subTask.DueDate.HasValue && task.DueDate.HasValue)
+            {
+                if (subTask.DueDate.Value.Date > task.DueDate.Value.Date)
+                {
+                    return BadRequest($"Alt görev son teslim tarihi, ana görevin son teslim tarihinden ({task.DueDate.Value.ToShortDateString()}) sonra olamaz!");
+                }
+            }
+
             _context.SubTasks.Add(subTask);
             await _context.SaveChangesAsync();
 
@@ -82,6 +91,16 @@ namespace TaskManager.API.Controllers
             if (existingSubTask == null || existingSubTask.Task?.UserId != userId)
             {
                 return NotFound();
+            }
+
+            // ✅ YENİ: Alt görev güncellerken de tarih kontrolü
+            var task = await _context.Tasks.FindAsync(subTask.TaskId);
+            if (task != null && subTask.DueDate.HasValue && task.DueDate.HasValue)
+            {
+                if (subTask.DueDate.Value.Date > task.DueDate.Value.Date)
+                {
+                    return BadRequest($"Alt görev son teslim tarihi, ana görevin son teslim tarihinden ({task.DueDate.Value.ToShortDateString()}) sonra olamaz!");
+                }
             }
 
             _context.Entry(existingSubTask).State = EntityState.Detached;

@@ -13,11 +13,9 @@ export function useProjectManager() {
       setError(null);
       const response = await projectsAPI.getAll();
       setProjects(response.data);
-      return response.data; // ✅ Return the fresh data
     } catch (err) {
       console.error("Projeler yüklenemedi:", err);
       setError("Projeler yüklenirken bir hata oluştu");
-      return []; // Return empty array on error
     } finally {
       setLoading(false);
     }
@@ -40,7 +38,7 @@ export function useProjectManager() {
       };
       
       await projectsAPI.create(dataToSend);
-      await fetchProjects();
+      await fetchProjects(); // ✅ Projeleri yeniden yükle
       return { success: true };
     } catch (err) {
       console.error("Proje oluşturulamadı:", err);
@@ -50,7 +48,17 @@ export function useProjectManager() {
 
   const updateProject = useCallback(async (id, projectData) => {
     try {
-      await projectsAPI.update(id, { ...projectData, id });
+      // ✅ FIX: Id'yi otomatik ekle
+      const dataToSend = {
+        id: id,
+        name: projectData.name,
+        description: projectData.description,
+        color: projectData.color,
+        deadline: projectData.deadline || null,
+        categoryIds: projectData.categoryIds, // ✅ categoryIds'yi direkt gönder
+      };
+
+      await projectsAPI.update(id, dataToSend);
       await fetchProjects();
       return { success: true };
     } catch (err) {
@@ -83,6 +91,6 @@ export function useProjectManager() {
     createProject,
     updateProject,
     deleteProject,
-    refetch: fetchProjects, // Now returns fresh data
+    refetch: fetchProjects,
   };
 }

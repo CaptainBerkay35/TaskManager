@@ -307,7 +307,7 @@ function TaskDetailModal({ task, onClose }) {
 
           {activeTab === "subtasks" && (
             <div>
-              <SubTaskList taskId={task.id} onUpdate={fetchSubTasks} />
+              <SubTaskList taskId={task.id} parentTask={task} />
             </div>
           )}
         </div>
