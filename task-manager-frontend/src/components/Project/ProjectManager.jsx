@@ -1,13 +1,17 @@
-import { useState } from 'react';
-import { useProjectManager } from '../../hooks/useProjectManager';
-import { useProjectFilters } from '../../hooks/useProjectFilters';
-import ProjectForm from './ProjectForm';
-import ProjectCard from './ProjectCard';
-import ProjectFilters from './ProjectFilters';
-import ProjectDetailModal from './ProjectDetailModal';
-import ConfirmDialog from '../ConfirmDialog';
-import Toast from '../Toast'; // ✅ YENİ
-import { EmptyProjectsState, NoFilterResultsState, LoadingState } from './ProjectEmptyStates';
+import { useState } from "react";
+import { useProjectManager } from "../../hooks/useProjectManager";
+import { useProjectFilters } from "../../hooks/useProjectFilters";
+import ProjectForm from "./ProjectForm";
+import ProjectCard from "./ProjectCard";
+import ProjectFilters from "./ProjectFilters";
+import ProjectDetailModal from "./ProjectDetailModal";
+import ConfirmDialog from "../ConfirmDialog";
+import Toast from "../Toast"; // ✅ YENİ
+import {
+  EmptyProjectsState,
+  NoFilterResultsState,
+  LoadingState,
+} from "./ProjectEmptyStates";
 
 function ProjectManager() {
   // Custom hooks
@@ -18,6 +22,7 @@ function ProjectManager() {
     createProject,
     updateProject,
     deleteProject,
+    refetch,
   } = useProjectManager();
 
   const {
@@ -40,12 +45,12 @@ function ProjectManager() {
     projectName: "",
     taskCount: 0,
   });
-  
+
   // ✅ YENİ: Toast state
   const [toast, setToast] = useState({
     show: false,
-    message: '',
-    type: 'success',
+    message: "",
+    type: "success",
   });
 
   // Form handlers
@@ -59,8 +64,8 @@ function ProjectManager() {
       // ✅ YENİ: Başarı toast'ı göster
       setToast({
         show: true,
-        message: editingProject ? 'Proje güncellendi!' : 'Proje oluşturuldu!',
-        type: 'success',
+        message: editingProject ? "Proje güncellendi!" : "Proje oluşturuldu!",
+        type: "success",
       });
     } else {
       alert("Hata: " + result.error);
@@ -96,17 +101,18 @@ function ProjectManager() {
   const handleDeleteConfirm = async () => {
     const projectName = deleteConfirm.projectName;
     const taskCount = deleteConfirm.taskCount;
-    
+
     const result = await deleteProject(deleteConfirm.projectId);
-    
+
     if (result.success) {
       // ✅ YENİ: Toast ile bildir
       setToast({
         show: true,
-        message: taskCount > 0 
-          ? `"${projectName}" projesi ve ${taskCount} görevi silindi`
-          : `"${projectName}" projesi silindi`,
-        type: 'success',
+        message:
+          taskCount > 0
+            ? `"${projectName}" projesi ve ${taskCount} görevi silindi`
+            : `"${projectName}" projesi silindi`,
+        type: "success",
       });
     } else {
       alert("Silme hatası: " + result.error);
@@ -127,6 +133,11 @@ function ProjectManager() {
       projectName: "",
       taskCount: 0,
     });
+  };
+
+  const handleCloseDetailModal = () => {
+    setSelectedProject(null);
+    refetch();
   };
 
   // Loading state
@@ -210,8 +221,8 @@ function ProjectManager() {
       {selectedProject && (
         <ProjectDetailModal
           project={selectedProject}
-          onClose={() => setSelectedProject(null)}
-          onTaskUpdate={() => {}} // Refetch handled by hook
+          onClose={handleCloseDetailModal}
+          onTaskUpdate={refetch}
         />
       )}
 
