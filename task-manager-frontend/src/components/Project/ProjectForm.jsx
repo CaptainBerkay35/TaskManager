@@ -1,34 +1,50 @@
-import { useState } from 'react';
-import RichTextEditor from '../RichTextEditor';
-import MultiSelectCategories from '../Category/MultiSelectCategories';
+import { useState } from "react";
+import RichTextEditor from "../RichTextEditor";
+import MultiSelectCategories from "../Category/MultiSelectCategories";
 
-function ProjectForm({ 
-  editingProject, 
-  categories, 
-  onSubmit, 
-  onCancel 
-}) {
+function ProjectForm({ editingProject, categories, onSubmit, onCancel }) {
   const [formData, setFormData] = useState({
     name: editingProject?.name || "",
     description: editingProject?.description || "",
     color: editingProject?.color || "#6366f1",
-    deadline: editingProject?.deadline ? editingProject.deadline.split("T")[0] : "",
-    categoryIds: editingProject?.categories ? editingProject.categories.map(c => c.id) : [],
+    deadline: editingProject?.deadline
+      ? editingProject.deadline.split("T")[0]
+      : "",
+    categoryIds: editingProject?.categories
+      ? editingProject.categories.map((c) => c.id)
+      : [],
+  });
+  const [validationError, setValidationError] = useState({
+    show: false,
+    message: "",
   });
 
+  
   const colorPresets = [
-    "#3B82F6", "#EF4444", "#10B981", "#F59E0B",
-    "#8B5CF6", "#EC4899", "#06B6D4", "#84CC16",
+    "#3B82F6",
+    "#EF4444",
+    "#10B981",
+    "#F59E0B",
+    "#8B5CF6",
+    "#EC4899",
+    "#06B6D4",
+    "#84CC16",
   ];
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    
-    // Validasyon
     if (!formData.categoryIds || formData.categoryIds.length === 0) {
-      alert('Lütfen en az 1 kategori seçin!');
-      return;
-    }
+    setValidationError({
+      show: true,
+      message: "⚠️ Lütfen en az 1 kategori seçin!",
+    });
+
+    setTimeout(() => {
+      setValidationError({ show: false, message: "" });
+    }, 3000);
+
+    return;
+  }
 
     onSubmit(formData);
   };
@@ -38,7 +54,7 @@ function ProjectForm({
       <h3 className="text-base sm:text-lg font-semibold text-gray-800 dark:text-white mb-3 sm:mb-4">
         {editingProject ? "Projeyi Düzenle" : "Yeni Proje Oluştur"}
       </h3>
-      
+
       <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
         {/* Proje Adı */}
         <div>
@@ -58,7 +74,7 @@ function ProjectForm({
         {/* Kategoriler */}
         <div>
           <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 sm:mb-2">
-            Kategoriler <span className="text-red-500">*</span> 
+            Kategoriler <span className="text-red-500">*</span>
             <span className="text-xs text-gray-500 dark:text-gray-400 font-normal ml-1">
               (En az 1 tane)
             </span>
@@ -83,12 +99,14 @@ function ProjectForm({
         <div>
           <RichTextEditor
             value={formData.description}
-            onChange={(value) => setFormData({ ...formData, description: value })}
+            onChange={(value) =>
+              setFormData({ ...formData, description: value })
+            }
             label="Açıklama"
             placeholder="Proje hakkında detaylı açıklama&#10;&#10;"
             rows={5}
             showCharCount={true}
-            maxLength={3000}
+            maxLength={500}
             id="project-description-editor"
           />
         </div>
@@ -118,7 +136,9 @@ function ProjectForm({
             <input
               type="color"
               value={formData.color}
-              onChange={(e) => setFormData({ ...formData, color: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, color: e.target.value })
+              }
               className="w-full h-10 rounded-lg border border-gray-300 dark:border-gray-600 cursor-pointer bg-white dark:bg-gray-700"
               aria-label="Özel renk seç"
             />
@@ -132,7 +152,9 @@ function ProjectForm({
             <input
               type="date"
               value={formData.deadline}
-              onChange={(e) => setFormData({ ...formData, deadline: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, deadline: e.target.value })
+              }
               className="w-full px-3 py-2 text-sm sm:text-base border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent bg-white dark:bg-gray-700 text-gray-800 dark:text-white transition"
             />
           </div>
@@ -156,6 +178,16 @@ function ProjectForm({
           </button>
         </div>
       </form>
+      {validationError.show && (
+        <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border-l-4 border-red-500 rounded-r-lg animate-shake">
+          <div className="flex items-start gap-2">
+            <svg className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+            <p className="text-sm font-medium text-red-800 dark:text-red-200">
+              {validationError.message}
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

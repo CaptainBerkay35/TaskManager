@@ -1,3 +1,5 @@
+import DescriptionRenderer from "../DescriptionRenderer";
+
 // components/Project/ProjectCard.jsx
 function ProjectCard({ project, onEdit, onDelete, onClick }) {
   return (
@@ -19,7 +21,7 @@ function ProjectCard({ project, onEdit, onDelete, onClick }) {
               {project.name}
             </h3>
           </div>
-          
+
           {/* ✅ Categories - Mobilde wrap */}
           {project.categories && project.categories.length > 0 && (
             <div className="flex flex-wrap gap-1">
@@ -38,7 +40,7 @@ function ProjectCard({ project, onEdit, onDelete, onClick }) {
             </div>
           )}
         </div>
-        
+
         {/* ✅ Action Buttons - Mobilde daha büyük */}
         <div className="flex gap-2 self-end sm:self-start flex-shrink-0">
           <button
@@ -50,7 +52,12 @@ function ProjectCard({ project, onEdit, onDelete, onClick }) {
             title="Düzenle"
             aria-label="Düzenle"
           >
-            <svg className="w-6 h-6 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg
+              className="w-6 h-6 sm:w-5 sm:h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -68,7 +75,12 @@ function ProjectCard({ project, onEdit, onDelete, onClick }) {
             title="Sil"
             aria-label="Sil"
           >
-            <svg className="w-6 h-6 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg
+              className="w-6 h-6 sm:w-5 sm:h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -80,11 +92,14 @@ function ProjectCard({ project, onEdit, onDelete, onClick }) {
         </div>
       </div>
 
-      {/* ✅ Description - Line clamp */}
       {project.description && (
-        <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">
-          {project.description}
-        </p>
+        <div className="mb-3">
+          <DescriptionRenderer
+            text={project.description}
+            maxLines={3} 
+            className="text-gray-600 dark:text-gray-400"
+          />
+        </div>
       )}
 
       {/* ✅ Footer - Mobilde dikey stack, desktop'ta yatay */}
@@ -94,10 +109,22 @@ function ProjectCard({ project, onEdit, onDelete, onClick }) {
         </span>
         {project.deadline && (
           <div className="flex items-center gap-1 text-xs text-gray-400 dark:text-gray-500">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+              />
             </svg>
-            <span>{new Date(project.deadline).toLocaleDateString("tr-TR")}</span>
+            <span>
+              {new Date(project.deadline).toLocaleDateString("tr-TR")}
+            </span>
           </div>
         )}
       </div>
