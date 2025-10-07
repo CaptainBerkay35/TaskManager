@@ -1,22 +1,26 @@
+// components/Project/ProjectCard.jsx
 function ProjectCard({ project, onEdit, onDelete, onClick }) {
   return (
     <div
       onClick={() => onClick(project)}
-      className="bg-white dark:bg-gray-800 p-5 rounded-lg shadow-md hover:shadow-lg transition border-l-4 cursor-pointer"
+      className="bg-white dark:bg-gray-800 p-4 sm:p-5 rounded-lg shadow-md hover:shadow-lg transition border-l-4 cursor-pointer touch-manipulation"
       style={{ borderLeftColor: project.color }}
     >
-      <div className="flex justify-between items-start mb-3">
-        <div className="flex-1">
+      {/* ✅ Header - Mobilde dikey stack, desktop'ta yatay */}
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 mb-3">
+        <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-2">
             <div
-              className="w-4 h-4 rounded-full"
+              className="w-3 h-3 sm:w-4 sm:h-4 rounded-full flex-shrink-0"
               style={{ backgroundColor: project.color }}
             />
-            <h3 className="text-lg font-semibold text-gray-800 dark:text-white">
+            {/* ✅ Responsive text boyutu */}
+            <h3 className="text-base sm:text-lg font-semibold text-gray-800 dark:text-white truncate">
               {project.name}
             </h3>
           </div>
           
+          {/* ✅ Categories - Mobilde wrap */}
           {project.categories && project.categories.length > 0 && (
             <div className="flex flex-wrap gap-1">
               {project.categories.map((cat) => (
@@ -35,16 +39,18 @@ function ProjectCard({ project, onEdit, onDelete, onClick }) {
           )}
         </div>
         
-        <div className="flex gap-2">
+        {/* ✅ Action Buttons - Mobilde daha büyük */}
+        <div className="flex gap-2 self-end sm:self-start flex-shrink-0">
           <button
             onClick={(e) => {
               e.stopPropagation();
               onEdit(project);
             }}
-            className="text-gray-400 dark:text-gray-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition"
+            className="p-2 sm:p-1.5 text-gray-400 dark:text-gray-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition touch-manipulation"
             title="Düzenle"
+            aria-label="Düzenle"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-6 h-6 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -58,10 +64,11 @@ function ProjectCard({ project, onEdit, onDelete, onClick }) {
               e.stopPropagation();
               onDelete(project);
             }}
-            className="text-gray-400 dark:text-gray-500 hover:text-red-600 dark:hover:text-red-400 transition"
+            className="p-2 sm:p-1.5 text-gray-400 dark:text-gray-500 hover:text-red-600 dark:hover:text-red-400 transition touch-manipulation"
             title="Sil"
+            aria-label="Sil"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-6 h-6 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -73,20 +80,25 @@ function ProjectCard({ project, onEdit, onDelete, onClick }) {
         </div>
       </div>
 
+      {/* ✅ Description - Line clamp */}
       {project.description && (
-        <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">
+        <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">
           {project.description}
         </p>
       )}
 
-      <div className="flex items-center justify-between pt-3 border-t border-gray-200 dark:border-gray-700">
-        <span className="text-sm text-gray-500 dark:text-gray-400">
+      {/* ✅ Footer - Mobilde dikey stack, desktop'ta yatay */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
+        <span className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 font-medium">
           {project.tasks?.length || 0} görev
         </span>
         {project.deadline && (
-          <span className="text-xs text-gray-400 dark:text-gray-500">
-            {new Date(project.deadline).toLocaleDateString("tr-TR")}
-          </span>
+          <div className="flex items-center gap-1 text-xs text-gray-400 dark:text-gray-500">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            <span>{new Date(project.deadline).toLocaleDateString("tr-TR")}</span>
+          </div>
         )}
       </div>
     </div>

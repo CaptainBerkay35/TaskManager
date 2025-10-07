@@ -6,7 +6,7 @@ import ProjectCard from "./ProjectCard";
 import ProjectFilters from "./ProjectFilters";
 import ProjectDetailModal from "./ProjectDetailModal";
 import ConfirmDialog from "../ConfirmDialog";
-import Toast from "../Toast"; // ✅ YENİ
+import Toast from "../Toast";
 import {
   EmptyProjectsState,
   NoFilterResultsState,
@@ -46,7 +46,7 @@ function ProjectManager() {
     taskCount: 0,
   });
 
-  // ✅ YENİ: Toast state
+  // Toast state
   const [toast, setToast] = useState({
     show: false,
     message: "",
@@ -61,7 +61,6 @@ function ProjectManager() {
 
     if (result.success) {
       handleFormCancel();
-      // ✅ YENİ: Başarı toast'ı göster
       setToast({
         show: true,
         message: editingProject ? "Proje güncellendi!" : "Proje oluşturuldu!",
@@ -74,7 +73,7 @@ function ProjectManager() {
 
   const handleFormCancel = () => {
     setShowForm(false);
-    setEditingProject(null); // ✅ FIX: Editing state'i temizle
+    setEditingProject(null);
   };
 
   const handleEdit = (project) => {
@@ -82,10 +81,21 @@ function ProjectManager() {
     setShowForm(true);
   };
 
-  // ✅ YENİ: Yeni proje butonuna basınca editing'i temizle
+  // ✅ DÜZELTİLDİ: Yeni proje butonuna basınca editing'i temizle
   const handleNewProject = () => {
-    setEditingProject(null); // ✅ FIX: Önce temizle
+    setEditingProject(null);
     setShowForm(true);
+  };
+
+  // ✅ YENİ: Buton toggle handler
+  const handleToggleForm = () => {
+    if (showForm) {
+      // Form açıksa kapat
+      handleFormCancel();
+    } else {
+      // Form kapalıysa aç
+      handleNewProject();
+    }
   };
 
   // Delete handlers
@@ -105,7 +115,6 @@ function ProjectManager() {
     const result = await deleteProject(deleteConfirm.projectId);
 
     if (result.success) {
-      // ✅ YENİ: Toast ile bildir
       setToast({
         show: true,
         message:
@@ -146,21 +155,46 @@ function ProjectManager() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
-          Projeler
-        </h2>
+    <div className="space-y-4 sm:space-y-6">
+      {/* Header - Responsive */}
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-4">
+        <div>
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-white">
+            Projeler
+          </h2>
+          <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1">
+            Toplam {filteredProjects.length} proje
+          </p>
+        </div>
+        
+        {/* ✅ DÜZELTİLDİ: Buton toggle fonksiyonu */}
         <button
-          onClick={handleNewProject} // ✅ FIX: Yeni fonksiyon kullan
-          className="bg-indigo-600 dark:bg-indigo-500 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 dark:hover:bg-indigo-600 transition"
+          onClick={handleToggleForm}
+          className={`w-full sm:w-auto px-4 py-2.5 sm:py-2 rounded-lg transition font-medium text-sm sm:text-base shadow-sm touch-manipulation flex items-center justify-center gap-2 ${
+            showForm && !editingProject
+              ? "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600"
+              : "bg-indigo-600 dark:bg-indigo-500 text-white hover:bg-indigo-700 dark:hover:bg-indigo-600"
+          }`}
         >
-          {showForm && !editingProject ? "İptal" : "+ Yeni Proje"}
+          {showForm && !editingProject ? (
+            <>
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+              İptal
+            </>
+          ) : (
+            <>
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              Yeni Proje
+            </>
+          )}
         </button>
       </div>
 
-      {/* Filters */}
+      {/* Filters - Sadece form kapalıyken göster */}
       {!showForm && (
         <ProjectFilters
           searchTerm={searchTerm}
@@ -173,7 +207,7 @@ function ProjectManager() {
         />
       )}
 
-      {/* Form */}
+      {/* Form - Açıkken göster */}
       {showForm && (
         <ProjectForm
           editingProject={editingProject}
@@ -183,23 +217,27 @@ function ProjectManager() {
         />
       )}
 
-      {/* Project List / Empty States */}
-      {projects.length === 0 ? (
-        <EmptyProjectsState />
-      ) : filteredProjects.length === 0 ? (
-        <NoFilterResultsState />
-      ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {filteredProjects.map((project) => (
-            <ProjectCard
-              key={project.id}
-              project={project}
-              onEdit={handleEdit}
-              onDelete={handleDeleteClick}
-              onClick={setSelectedProject}
-            />
-          ))}
-        </div>
+      {/* Project List / Empty States - Form kapalıyken göster */}
+      {!showForm && (
+        <>
+          {projects.length === 0 ? (
+            <EmptyProjectsState />
+          ) : filteredProjects.length === 0 ? (
+            <NoFilterResultsState />
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+              {filteredProjects.map((project) => (
+                <ProjectCard
+                  key={project.id}
+                  project={project}
+                  onEdit={handleEdit}
+                  onDelete={handleDeleteClick}
+                  onClick={setSelectedProject}
+                />
+              ))}
+            </div>
+          )}
+        </>
       )}
 
       {/* Delete Confirmation Dialog */}
@@ -226,7 +264,7 @@ function ProjectManager() {
         />
       )}
 
-      {/* ✅ YENİ: Toast Notification */}
+      {/* Toast Notification */}
       <Toast
         message={toast.message}
         type={toast.type}

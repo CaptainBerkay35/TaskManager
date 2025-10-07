@@ -71,45 +71,49 @@ function TaskDetailModal({ task, onClose }) {
   const totalSubTasks = subTasks.length;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl dark:shadow-gray-900/50 max-w-3xl w-full max-h-[90vh] overflow-hidden">
-        {/* Header */}
-        <div className="bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-700 dark:to-purple-700 text-white p-6">
-          <div className="flex justify-between items-start mb-4">
-            <div className="flex-1">
-              <h2 className="text-2xl font-bold mb-2">{task.title}</h2>
-              <div className="flex gap-2 flex-wrap">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-2 sm:p-4 z-50 overflow-y-auto">
+      <div className="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl shadow-2xl dark:shadow-gray-900/50 w-full max-w-3xl my-4 sm:my-8 max-h-[95vh] sm:max-h-[90vh] overflow-hidden flex flex-col">
+        {/* Header - Responsive */}
+        <div className="bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-700 dark:to-purple-700 text-white p-4 sm:p-6 flex-shrink-0">
+          <div className="flex justify-between items-start gap-3">
+            <div className="flex-1 min-w-0">
+              <h2 className="text-lg sm:text-2xl font-bold mb-2 sm:mb-3 break-words">
+                {task.title}
+              </h2>
+              <div className="flex gap-1.5 sm:gap-2 flex-wrap">
                 <span
-                  className={`px-3 py-1 rounded-full text-sm font-medium ${getPriorityColor(
+                  className={`px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium ${getPriorityColor(
                     task.priority
                   )} bg-opacity-90`}
                 >
                   {getPriorityText(task.priority)}
                 </span>
                 <span
-                  className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(
+                  className={`px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium ${getStatusColor(
                     task.status
                   )} bg-opacity-90`}
                 >
                   {task.status}
                 </span>
-                {/* PROJECT göster, CATEGORY kaldırıldı */}
                 {task.project && (
                   <span
-                    className="px-3 py-1 rounded-full text-sm font-medium text-white"
+                    className="px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium text-white truncate max-w-[150px] sm:max-w-none"
                     style={{ backgroundColor: task.project.color }}
+                    title={task.project.name}
                   >
-                    📁 {task.project.name}
+                    <span className="hidden sm:inline">📁 </span>
+                    {task.project.name}
                   </span>
                 )}
               </div>
             </div>
             <button
               onClick={onClose}
-              className="text-white hover:bg-white hover:bg-opacity-20 rounded-lg p-2 transition"
+              className="flex-shrink-0 text-white hover:bg-white hover:bg-opacity-20 rounded-lg p-1.5 sm:p-2 transition"
+              aria-label="Kapat"
             >
               <svg
-                className="w-6 h-6"
+                className="w-5 h-5 sm:w-6 sm:h-6"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -125,12 +129,12 @@ function TaskDetailModal({ task, onClose }) {
           </div>
         </div>
 
-        {/* Tabs */}
-        <div className="border-b border-gray-200 dark:border-gray-700">
+        {/* Tabs - Responsive */}
+        <div className="border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
           <div className="flex">
             <button
               onClick={() => setActiveTab("details")}
-              className={`px-6 py-3 font-medium transition ${
+              className={`flex-1 sm:flex-none px-3 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base font-medium transition ${
                 activeTab === "details"
                   ? "text-indigo-600 dark:text-indigo-400 border-b-2 border-indigo-600 dark:border-indigo-400"
                   : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
@@ -140,18 +144,19 @@ function TaskDetailModal({ task, onClose }) {
             </button>
             <button
               onClick={() => setActiveTab("subtasks")}
-              className={`px-6 py-3 font-medium transition relative ${
+              className={`flex-1 sm:flex-none px-3 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base font-medium transition relative ${
                 activeTab === "subtasks"
                   ? "text-indigo-600 dark:text-indigo-400 border-b-2 border-indigo-600 dark:border-indigo-400"
                   : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
               }`}
             >
-              <span className="flex items-center gap-2">
-                Alt Görevler
+              <span className="flex items-center justify-center gap-1.5 sm:gap-2">
+                <span className="hidden sm:inline">Alt Görevler</span>
+                <span className="sm:hidden">Alt Görev</span>
                 {!subTasksLoading && totalSubTasks > 0 && (
                   <span
                     className={`
-                    px-2 py-0.5 text-xs font-semibold rounded-full
+                    px-1.5 sm:px-2 py-0.5 text-xs font-semibold rounded-full
                     ${
                       activeTab === "subtasks"
                         ? "bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300"
@@ -167,30 +172,30 @@ function TaskDetailModal({ task, onClose }) {
           </div>
         </div>
 
-        {/* Content */}
-        <div className="p-6 overflow-y-auto max-h-[calc(90vh-300px)]">
+        {/* Content - Responsive & Scrollable */}
+        <div className="p-4 sm:p-6 overflow-y-auto flex-1">
           {activeTab === "details" && (
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               {/* Description */}
               {task.description && (
-                <div >
-                  <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                <div>
+                  <h4 className="text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                     Açıklama:
                   </h4>
                   <DescriptionRenderer
                     text={task.description}
-                    className="text-gray-600 dark:text-gray-400"
+                    className="text-sm sm:text-base text-gray-600 dark:text-gray-400"
                   />
                 </div>
               )}
 
-              {/* Dates */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-                  <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">
+              {/* Dates - Responsive Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                <div className="bg-gray-50 dark:bg-gray-700 p-3 sm:p-4 rounded-lg">
+                  <h3 className="text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">
                     Oluşturulma Tarihi
                   </h3>
-                  <p className="text-gray-800 dark:text-gray-200">
+                  <p className="text-sm sm:text-base text-gray-800 dark:text-gray-200">
                     {new Date(task.createdDate).toLocaleDateString("tr-TR", {
                       year: "numeric",
                       month: "long",
@@ -203,17 +208,17 @@ function TaskDetailModal({ task, onClose }) {
 
                 {task.dueDate && (
                   <div
-                    className={`p-4 rounded-lg ${
+                    className={`p-3 sm:p-4 rounded-lg ${
                       isOverdue()
                         ? "bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800"
                         : "bg-gray-50 dark:bg-gray-700"
                     }`}
                   >
-                    <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                    <h3 className="text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">
                       Son Teslim Tarihi
                     </h3>
                     <p
-                      className={`font-medium ${
+                      className={`text-sm sm:text-base font-medium ${
                         isOverdue()
                           ? "text-red-600 dark:text-red-400"
                           : "text-gray-800 dark:text-gray-200"
@@ -235,11 +240,11 @@ function TaskDetailModal({ task, onClose }) {
                 )}
 
                 {task.completedDate && (
-                  <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg border border-green-200 dark:border-green-800">
-                    <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                  <div className="bg-green-50 dark:bg-green-900/20 p-3 sm:p-4 rounded-lg border border-green-200 dark:border-green-800 sm:col-span-2">
+                    <h3 className="text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">
                       Tamamlanma Tarihi
                     </h3>
-                    <p className="text-green-800 dark:text-green-400 font-medium">
+                    <p className="text-sm sm:text-base text-green-800 dark:text-green-400 font-medium">
                       {new Date(task.completedDate).toLocaleDateString(
                         "tr-TR",
                         {
@@ -255,21 +260,21 @@ function TaskDetailModal({ task, onClose }) {
                 )}
               </div>
 
-              {/* Additional Info */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-                  <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">
+              {/* Additional Info - Responsive */}
+              <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                <div className="bg-gray-50 dark:bg-gray-700 p-3 sm:p-4 rounded-lg">
+                  <h3 className="text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">
                     Durum
                   </h3>
-                  <p className="text-gray-800 dark:text-gray-200">
+                  <p className="text-sm sm:text-base text-gray-800 dark:text-gray-200">
                     {task.status}
                   </p>
                 </div>
-                <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-                  <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                <div className="bg-gray-50 dark:bg-gray-700 p-3 sm:p-4 rounded-lg">
+                  <h3 className="text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">
                     Öncelik
                   </h3>
-                  <p className="text-gray-800 dark:text-gray-200">
+                  <p className="text-sm sm:text-base text-gray-800 dark:text-gray-200">
                     {getPriorityText(task.priority)}
                   </p>
                 </div>
@@ -277,11 +282,11 @@ function TaskDetailModal({ task, onClose }) {
 
               {/* Alt Görev Özeti */}
               {totalSubTasks > 0 && (
-                <div className="bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800 p-4 rounded-lg">
-                  <h3 className="text-sm font-semibold text-indigo-700 dark:text-indigo-300 mb-2">
+                <div className="bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800 p-3 sm:p-4 rounded-lg">
+                  <h3 className="text-xs sm:text-sm font-semibold text-indigo-700 dark:text-indigo-300 mb-2">
                     Alt Görev İlerlemesi
                   </h3>
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2 sm:gap-3">
                     <div className="flex-1">
                       <div className="w-full bg-indigo-200 dark:bg-indigo-900 rounded-full h-2">
                         <div
@@ -296,7 +301,7 @@ function TaskDetailModal({ task, onClose }) {
                         />
                       </div>
                     </div>
-                    <span className="text-sm font-medium text-indigo-700 dark:text-indigo-300">
+                    <span className="text-xs sm:text-sm font-medium text-indigo-700 dark:text-indigo-300 whitespace-nowrap">
                       {completedSubTasks}/{totalSubTasks}
                     </span>
                   </div>
