@@ -1,23 +1,23 @@
-import { useState, useEffect } from 'react';
-import { Calendar, momentLocalizer } from 'react-big-calendar';
-import moment from 'moment';
-import 'moment/locale/tr';
-import 'react-big-calendar/lib/css/react-big-calendar.css';
-import { tasksAPI, projectsAPI } from '../../services/api';
-import TaskForm from '../Task/TaskForm';
-import TaskDetailModal from '../Task/TaskDetailModal';
-import ProjectDetailModal from '../Project/ProjectDetailModal';
-import CalendarHeader from './CalendarHeader';
-import CalendarLegend from './CalendarLegend';
-import CalendarStats from './CalendarStats';
-import CalendarProjectFilter from './CalendarProjectFilter';
-import CalendarMonthSelector from './CalendarMonthSelector';
-import useCalendarEvents from '../../hooks/useCalendarEvents';
-import useEventStyleGetter from '../../hooks/useEventStyleGetter';
-import { CALENDAR_MESSAGES } from '../../constants/calendarMessages';
+import { useState, useEffect } from "react";
+import { Calendar, momentLocalizer } from "react-big-calendar";
+import moment from "moment";
+import "moment/locale/tr";
+import "react-big-calendar/lib/css/react-big-calendar.css";
+import { tasksAPI, projectsAPI } from "../../services/api";
+import TaskForm from "../Task/TaskForm";
+import TaskDetailModal from "../Task/TaskDetailModal";
+import ProjectDetailModal from "../Project/ProjectDetailModal";
+import CalendarHeader from "./CalendarHeader";
+import CalendarLegend from "./CalendarLegend";
+import CalendarStats from "./CalendarStats";
+import CalendarProjectFilter from "./CalendarProjectFilter";
+import CalendarMonthSelector from "./CalendarMonthSelector";
+import useCalendarEvents from "../../hooks/useCalendarEvents";
+import useEventStyleGetter from "../../hooks/useEventStyleGetter";
+import { CALENDAR_MESSAGES } from "../../constants/calendarMessages";
 
 // Türkçe yerelleştirme
-moment.locale('tr');
+moment.locale("tr");
 const localizer = momentLocalizer(moment);
 
 function CalendarView() {
@@ -30,7 +30,7 @@ function CalendarView() {
   const [showTaskForm, setShowTaskForm] = useState(false);
   const [showTaskDetail, setShowTaskDetail] = useState(false);
   const [showProjectDetail, setShowProjectDetail] = useState(false);
-  const [view, setView] = useState('month');
+  const [view, setView] = useState("month");
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [filterProjectId, setFilterProjectId] = useState(null);
 
@@ -49,12 +49,12 @@ function CalendarView() {
       setLoading(true);
       const [tasksRes, projectsRes] = await Promise.all([
         tasksAPI.getAll(),
-        projectsAPI.getAll()
+        projectsAPI.getAll(),
       ]);
       setTasks(tasksRes.data);
       setProjects(projectsRes.data);
     } catch (err) {
-      console.error('Veriler yüklenemedi:', err);
+      console.error("Veriler yüklenemedi:", err);
     } finally {
       setLoading(false);
     }
@@ -63,11 +63,11 @@ function CalendarView() {
   // Event Handlers
   const handleSelectEvent = (event) => {
     const { type, data } = event.resource;
-    
-    if (type === 'task') {
+
+    if (type === "task") {
       setSelectedTask(data);
       setShowTaskDetail(true);
-    } else if (type === 'project') {
+    } else if (type === "project") {
       setSelectedProject(data);
       setShowProjectDetail(true);
     }
@@ -115,15 +115,15 @@ function CalendarView() {
   // Custom Toolbar Component
   const CustomToolbar = (toolbar) => {
     const goToBack = () => {
-      toolbar.onNavigate('PREV');
+      toolbar.onNavigate("PREV");
     };
 
     const goToNext = () => {
-      toolbar.onNavigate('NEXT');
+      toolbar.onNavigate("NEXT");
     };
 
     const goToToday = () => {
-      toolbar.onNavigate('TODAY');
+      toolbar.onNavigate("TODAY");
     };
 
     return (
@@ -152,7 +152,7 @@ function CalendarView() {
           </div>
 
           {/* Month/Year Selector */}
-          <CalendarMonthSelector 
+          <CalendarMonthSelector
             currentDate={toolbar.date}
             onDateChange={handleMonthChange}
           />
@@ -160,21 +160,21 @@ function CalendarView() {
           {/* View Buttons */}
           <div className="flex items-center gap-2">
             <button
-              onClick={() => setView('month')}
+              onClick={() => setView("month")}
               className={`px-3 py-2 rounded-lg transition text-sm font-medium ${
-                view === 'month'
-                  ? 'bg-indigo-600 dark:bg-indigo-500 text-white'
-                  : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                view === "month"
+                  ? "bg-indigo-600 dark:bg-indigo-500 text-white"
+                  : "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600"
               }`}
             >
               Ay
             </button>
             <button
-              onClick={() => setView('agenda')}
+              onClick={() => setView("agenda")}
               className={`px-3 py-2 rounded-lg transition text-sm font-medium ${
-                view === 'agenda'
-                  ? 'bg-indigo-600 dark:bg-indigo-500 text-white'
-                  : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                view === "agenda"
+                  ? "bg-indigo-600 dark:bg-indigo-500 text-white"
+                  : "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600"
               }`}
             >
               Ajanda
@@ -199,10 +199,10 @@ function CalendarView() {
       {/* Header Section */}
       <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-700">
         <CalendarHeader onNewTask={handleNewTask} />
-        
+
         {/* Project Filter */}
         <div className="mt-4 pb-4 border-b border-gray-200 dark:border-gray-700">
-          <CalendarProjectFilter 
+          <CalendarProjectFilter
             projects={projects}
             selectedProjectId={filterProjectId}
             onProjectChange={handleProjectFilterChange}
@@ -210,16 +210,17 @@ function CalendarView() {
           {filterProjectId && (
             <div className="mt-2 text-sm text-indigo-600 dark:text-indigo-400">
               <span className="font-medium">
-                Filtreleniyor: {projects.find(p => p.id === filterProjectId)?.name}
+                Filtreleniyor:{" "}
+                {projects.find((p) => p.id === filterProjectId)?.name}
               </span>
             </div>
           )}
         </div>
-        
+
         <CalendarLegend />
-        <CalendarStats 
-          tasks={tasks} 
-          projects={projects} 
+        <CalendarStats
+          tasks={tasks}
+          projects={projects}
           selectedProjectId={filterProjectId}
           currentMonth={selectedDate}
         />
@@ -233,11 +234,12 @@ function CalendarView() {
             events={events}
             startAccessor="start"
             endAccessor="end"
-            style={{ height: '100%' }}
+            style={{ height: "100%" }}
             eventPropGetter={eventStyleGetter}
             onSelectEvent={handleSelectEvent}
             selectable={false}
-            views={['month', 'agenda']}
+            draggableAccessor={() => false}
+            views={["month", "agenda"]}
             view={view}
             onView={setView}
             date={selectedDate}
@@ -254,17 +256,14 @@ function CalendarView() {
 
       {/* Modals */}
       {showTaskDetail && selectedTask && (
-        <TaskDetailModal
-          task={selectedTask}
-          onClose={handleCloseTaskDetail}
-        />
+        <TaskDetailModal task={selectedTask} onClose={handleCloseTaskDetail} />
       )}
 
       {showTaskForm && (
         <TaskForm
+          task={selectedTask}
           onClose={handleCloseTaskForm}
-          onSuccess={handleTaskFormSuccess}
-          editTask={selectedTask}
+          onRefresh={handleTaskFormSuccess}
         />
       )}
 

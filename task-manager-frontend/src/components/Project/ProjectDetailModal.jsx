@@ -10,12 +10,6 @@ function ProjectDetailModal({ project, onClose, onTaskUpdate }) {
   const [loading, setLoading] = useState(true);
   const [showTaskForm, setShowTaskForm] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
-  const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    priority: 2,
-    dueDate: '',
-  });
   const [deleteConfirm, setDeleteConfirm] = useState({
     show: false,
     taskId: null,
@@ -39,30 +33,14 @@ function ProjectDetailModal({ project, onClose, onTaskUpdate }) {
     }
   };
 
-  const handleEditTask = (task) => {
-    setEditingTask(task);
+  const handleAddTask = () => {
+    setEditingTask(null);
     setShowTaskForm(true);
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    try {
-      const taskData = {
-        ...formData,
-        projectId: project.id,
-        status: 'Devam Ediyor',
-        dueDate: formData.dueDate || null,
-      };
-
-      await tasksAPI.create(taskData);
-      setFormData({ title: '', description: '', priority: 2, dueDate: '' });
-      setShowTaskForm(false);
-      fetchProjectTasks();
-      if (onTaskUpdate) onTaskUpdate();
-    } catch (err) {
-      alert('Hata: ' + (err.response?.data || err.message));
-    }
+  const handleEditTask = (task) => {
+    setEditingTask(task);
+    setShowTaskForm(true);
   };
 
   const handleDeleteClick = (task) => {
@@ -221,73 +199,15 @@ function ProjectDetailModal({ project, onClose, onTaskUpdate }) {
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-semibold text-gray-800 dark:text-white">Görevler</h3>
               <button
-                onClick={() => setShowTaskForm(!showTaskForm)}
-                className="bg-indigo-600 dark:bg-indigo-500 text-white px-3 py-1.5 rounded-lg hover:bg-indigo-700 dark:hover:bg-indigo-600 transition text-sm"
+                onClick={handleAddTask}
+                className="bg-indigo-600 dark:bg-indigo-500 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 dark:hover:bg-indigo-600 transition text-sm font-medium flex items-center gap-2"
               >
-                {showTaskForm ? 'İptal' : '+ Görev Ekle'}
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                Görev Ekle
               </button>
             </div>
-
-            {/* Quick Add Task Form */}
-            {showTaskForm && !editingTask && (
-              <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg mb-4 space-y-3">
-                <form onSubmit={handleSubmit} className="space-y-3">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      Görev Başlığı
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.title}
-                      onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                      placeholder="Görev başlığı..."
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-600 text-gray-800 dark:text-white"
-                      required
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        Öncelik
-                      </label>
-                      <select
-                        value={formData.priority}
-                        onChange={(e) => setFormData({ ...formData, priority: parseInt(e.target.value) })}
-                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-600 text-gray-800 dark:text-white"
-                      >
-                        <option value={1}>Düşük</option>
-                        <option value={2}>Orta</option>
-                        <option value={3}>Yüksek</option>
-                        <option value={4}>Acil</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        Son Tarih
-                      </label>
-                      <input
-                        type="date"
-                        value={formData.dueDate}
-                        onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
-                        max={project.deadline ? project.deadline.split('T')[0] : ''}
-                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-600 text-gray-800 dark:text-white"
-                      />
-                    </div>
-                  </div>
-                  <div className="bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800 rounded-lg p-3">
-                    <p className="text-xs text-indigo-700 dark:text-indigo-300">
-                      ℹ️ Bu görev otomatik olarak "<span className="font-semibold">{project.name}</span>" projesine eklenecek
-                    </p>
-                  </div>
-                  <button
-                    type="submit"
-                    className="w-full bg-indigo-600 dark:bg-indigo-500 text-white py-2 rounded-lg hover:bg-indigo-700 dark:hover:bg-indigo-600 transition font-medium"
-                  >
-                    Görevi Ekle
-                  </button>
-                </form>
-              </div>
-            )}
 
             {loading ? (
               <div className="flex justify-center py-8">
@@ -298,9 +218,15 @@ function ProjectDetailModal({ project, onClose, onTaskUpdate }) {
                 <svg className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                 </svg>
-                <p className="text-gray-500 dark:text-gray-400">
-                  Bu projede henüz görev yok. Yukarıdan görev ekleyin!
+                <p className="text-gray-500 dark:text-gray-400 mb-4">
+                  Bu projede henüz görev yok
                 </p>
+                <button
+                  onClick={handleAddTask}
+                  className="bg-indigo-600 dark:bg-indigo-500 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 dark:hover:bg-indigo-600 transition text-sm font-medium"
+                >
+                  İlk Görevi Ekle
+                </button>
               </div>
             ) : (
               <div className="space-y-3">
@@ -320,12 +246,13 @@ function ProjectDetailModal({ project, onClose, onTaskUpdate }) {
         </div>
       </div>
 
-      {/* Task Form Modal */}
-      {showTaskForm && editingTask && (
+      {/* Task Form Modal - TEK BİR TANE, HEM CREATE HEM EDIT İÇİN */}
+      {showTaskForm && (
         <TaskForm
+          task={editingTask}
           onClose={handleTaskFormClose}
-          onSuccess={handleTaskFormSuccess}
-          editTask={editingTask}
+          onRefresh={handleTaskFormSuccess}
+          defaultProjectId={project.id}  
         />
       )}
 
