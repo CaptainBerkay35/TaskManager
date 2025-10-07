@@ -1,3 +1,4 @@
+// components/Task/TaskForm.jsx
 import { useState, useEffect } from "react";
 import { projectsAPI, tasksAPI } from "../../services/api";
 import RichTextEditor from "../RichTextEditor";
@@ -16,23 +17,23 @@ function TaskForm({ editTask, onClose, onRefresh, defaultProjectId }) {
   const [deadlineError, setDeadlineError] = useState("");
 
   useEffect(() => {
-  fetchProjects();
-  if (editTask) {
-    setFormData({
-      title: editTask.title || "",
-      description: editTask.description || "",
-      priority: editTask.priority || 2,
-      dueDate: editTask.dueDate ? editTask.dueDate.split("T")[0] : "",
-      projectId: editTask.projectId || 0,
-      status: editTask.status || "Devam Ediyor",
-    });
-  } else if (defaultProjectId) {
-    setFormData(prev => ({
-      ...prev,
-      projectId: defaultProjectId
-    }));
-  }
-}, [editTask, defaultProjectId]);
+    fetchProjects();
+    if (editTask) {
+      setFormData({
+        title: editTask.title || "",
+        description: editTask.description || "",
+        priority: editTask.priority || 2,
+        dueDate: editTask.dueDate ? editTask.dueDate.split("T")[0] : "",
+        projectId: editTask.projectId || 0,
+        status: editTask.status || "Devam Ediyor",
+      });
+    } else if (defaultProjectId) {
+      setFormData(prev => ({
+        ...prev,
+        projectId: defaultProjectId
+      }));
+    }
+  }, [editTask, defaultProjectId]);
 
   const fetchProjects = async () => {
     try {
@@ -124,7 +125,6 @@ function TaskForm({ editTask, onClose, onRefresh, defaultProjectId }) {
         status: formData.status || "Devam Ediyor",
       };
 
-      // Edit durumunda ID ekle
       if (editTask) {
         taskData.id = editTask.id;
         await tasksAPI.update(editTask.id, taskData);
@@ -142,6 +142,7 @@ function TaskForm({ editTask, onClose, onRefresh, defaultProjectId }) {
       setLoading(false);
     }
   };
+
   const getMaxDate = () => {
     const projectDeadline = getSelectedProjectDeadline();
     if (!projectDeadline) return "";
@@ -149,14 +150,29 @@ function TaskForm({ editTask, onClose, onRefresh, defaultProjectId }) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white dark:bg-gray-800 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="p-6">
-          <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-6">
-            {editTask ? "Görevi Düzenle" : "Yeni Görev Oluştur"}
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-0 sm:p-4 z-50">
+      <div className="bg-white dark:bg-gray-800 rounded-none sm:rounded-lg w-full sm:max-w-2xl h-full sm:h-auto sm:max-h-[90vh] overflow-y-auto flex flex-col">
+        {/* ✅ Sticky Header - Mobilde üstte sabit */}
+        <div className="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4 sm:p-6 flex items-center justify-between z-10">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-white">
+            {editTask ? "Görevi Düzenle" : "Yeni Görev"}
           </h2>
+          {/* ✅ Mobilde X butonu göster */}
+          <button
+            onClick={onClose}
+            className="lg:hidden p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 touch-manipulation"
+            aria-label="Kapat"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
 
-          <div className="space-y-4">
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6">
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Görev Başlığı */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Görev Başlığı *
@@ -168,11 +184,12 @@ function TaskForm({ editTask, onClose, onRefresh, defaultProjectId }) {
                 onChange={(e) =>
                   setFormData({ ...formData, title: e.target.value })
                 }
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 bg-white dark:bg-gray-700 text-gray-800 dark:text-white"
+                className="w-full px-3 sm:px-4 py-3 sm:py-2 text-base sm:text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 bg-white dark:bg-gray-700 text-gray-800 dark:text-white"
                 placeholder="Görev adını girin..."
               />
             </div>
 
+            {/* Açıklama */}
             <div>
               <RichTextEditor
                 value={formData.description}
@@ -183,7 +200,9 @@ function TaskForm({ editTask, onClose, onRefresh, defaultProjectId }) {
               />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* ✅ Proje ve Öncelik - Mobilde stack, tablet+ grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Proje */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Proje *
@@ -192,7 +211,7 @@ function TaskForm({ editTask, onClose, onRefresh, defaultProjectId }) {
                   required
                   value={formData.projectId}
                   onChange={handleProjectChange}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 bg-white dark:bg-gray-700 text-gray-800 dark:text-white"
+                  className="w-full px-3 sm:px-4 py-3 sm:py-2 text-base sm:text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 bg-white dark:bg-gray-700 text-gray-800 dark:text-white"
                 >
                   <option value="">Proje Seçin</option>
                   {projects.map((project) => (
@@ -212,6 +231,7 @@ function TaskForm({ editTask, onClose, onRefresh, defaultProjectId }) {
                 )}
               </div>
 
+              {/* Öncelik */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Öncelik
@@ -221,16 +241,17 @@ function TaskForm({ editTask, onClose, onRefresh, defaultProjectId }) {
                   onChange={(e) =>
                     setFormData({ ...formData, priority: e.target.value })
                   }
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 bg-white dark:bg-gray-700 text-gray-800 dark:text-white"
+                  className="w-full px-3 sm:px-4 py-3 sm:py-2 text-base sm:text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 bg-white dark:bg-gray-700 text-gray-800 dark:text-white"
                 >
-                  <option value="1">Düşük</option>
-                  <option value="2">Orta</option>
-                  <option value="3">Yüksek</option>
-                  <option value="4">Acil</option>
+                  <option value="1">🟢 Düşük</option>
+                  <option value="2">🟡 Orta</option>
+                  <option value="3">🟠 Yüksek</option>
+                  <option value="4">🔴 Acil</option>
                 </select>
               </div>
             </div>
 
+            {/* Son Teslim Tarihi */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Son Teslim Tarihi
@@ -240,7 +261,7 @@ function TaskForm({ editTask, onClose, onRefresh, defaultProjectId }) {
                 value={formData.dueDate}
                 onChange={handleDueDateChange}
                 max={getMaxDate()}
-                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 bg-white dark:bg-gray-700 text-gray-800 dark:text-white ${
+                className={`w-full px-3 sm:px-4 py-3 sm:py-2 text-base sm:text-sm border rounded-lg focus:ring-2 bg-white dark:bg-gray-700 text-gray-800 dark:text-white ${
                   deadlineError
                     ? "border-red-500 focus:ring-red-500"
                     : "border-gray-300 dark:border-gray-600 focus:ring-indigo-500 dark:focus:ring-indigo-400"
@@ -264,27 +285,30 @@ function TaskForm({ editTask, onClose, onRefresh, defaultProjectId }) {
                 );
               })()}
             </div>
+          </form>
+        </div>
 
-            <div className="flex gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
-              <button
-                type="button"
-                onClick={onClose}
-                className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
-              >
-                İptal
-              </button>
-              <button
-                onClick={handleSubmit}
-                disabled={loading || projects.length === 0 || !!deadlineError}
-                className="flex-1 bg-indigo-600 dark:bg-indigo-500 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 dark:hover:bg-indigo-600 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
-              >
-                {loading
-                  ? "Kaydediliyor..."
-                  : editTask
-                  ? "Güncelle"
-                  : "Oluştur"}
-              </button>
-            </div>
+        {/* ✅ Sticky Footer - Mobilde altta sabit */}
+        <div className="sticky bottom-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 p-4 sm:p-6">
+          <div className="flex gap-3">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 px-4 py-3 sm:py-2 text-base sm:text-sm border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition font-medium touch-manipulation"
+            >
+              İptal
+            </button>
+            <button
+              onClick={handleSubmit}
+              disabled={loading || projects.length === 0 || !!deadlineError}
+              className="flex-1 bg-indigo-600 dark:bg-indigo-500 text-white px-4 py-3 sm:py-2 text-base sm:text-sm rounded-lg hover:bg-indigo-700 dark:hover:bg-indigo-600 transition disabled:bg-gray-400 disabled:cursor-not-allowed font-medium touch-manipulation"
+            >
+              {loading
+                ? "Kaydediliyor..."
+                : editTask
+                ? "Güncelle"
+                : "Oluştur"}
+            </button>
           </div>
         </div>
       </div>

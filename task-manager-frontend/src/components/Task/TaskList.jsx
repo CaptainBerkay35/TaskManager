@@ -97,21 +97,31 @@ function TaskList() {
   if (error) return <ErrorState error={error} />;
 
   return (
-    <div className="space-y-4">
-      {/* Header */}
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
-          Görevlerim
-        </h2>
+    <div className="space-y-3 sm:space-y-4">
+      {/* Header - Responsive */}
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
+        <div>
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-white">
+            Görevlerim
+          </h2>
+          <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1">
+            Toplam {filteredTasks.length} görev
+          </p>
+        </div>
         <button
           onClick={() => setShowForm(true)}
-          className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 transition"
+          className="w-full sm:w-auto bg-indigo-600 text-white px-4 py-2.5 sm:py-2 rounded-lg hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 transition font-medium text-sm sm:text-base shadow-sm"
         >
-          + Yeni Görev
+          <span className="flex items-center justify-center gap-2">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            Yeni Görev
+          </span>
         </button>
       </div>
 
-      {/* Filters */}
+      {/* Filters - Already responsive from TaskFilters component */}
       <TaskFilters
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
@@ -129,7 +139,7 @@ function TaskList() {
       ) : filteredTasks.length === 0 ? (
         <NoFilterResultsState />
       ) : (
-        <div className="grid gap-4">
+        <div className="grid gap-3 sm:gap-4">
           {filteredTasks.map((task) => (
             <TaskCard
               key={task.id}
@@ -143,7 +153,7 @@ function TaskList() {
         </div>
       )}
 
-      {/* Task Form Modal */}
+      {/* Task Form Modal - Already responsive */}
       {showForm && (
         <TaskForm
           onClose={handleFormClose}

@@ -60,17 +60,19 @@ function CalendarStats({ tasks, projects, selectedProjectId, currentMonth }) {
   ];
 
   return (
-    <div className="mt-4 space-y-2">
+    <div className="mt-3 sm:mt-4 space-y-2">
       {currentMonth && (
         <div className="text-xs text-gray-500 dark:text-gray-400">
           İstatistikler: {currentMonth.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' })}
         </div>
       )}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
         {stats.map((stat) => (
-          <div key={stat.label} className={`${stat.bgColor} p-3 rounded-lg`}>
-            <div className={`text-xs ${stat.textColor}`}>{stat.label}</div>
-            <div className={`text-2xl font-bold ${stat.valueColor}`}>
+          <div key={stat.label} className={`${stat.bgColor} p-2.5 sm:p-3 rounded-lg`}>
+            <div className={`text-xs sm:text-sm ${stat.textColor} mb-1`}>
+              {stat.label}
+            </div>
+            <div className={`text-xl sm:text-2xl font-bold ${stat.valueColor}`}>
               {stat.value}
             </div>
           </div>
