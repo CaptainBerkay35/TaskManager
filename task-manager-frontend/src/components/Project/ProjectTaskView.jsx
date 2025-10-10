@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { tasksAPI, projectsAPI } from "../../services/api";
 import TaskCard from "../Task/TaskCard";
 import TaskForm from "../Task/TaskForm";
@@ -16,10 +16,13 @@ function ProjectTaskView({ projectId }) {
     taskId: null,
     taskTitle: "",
   });
+  
+  // Filter states
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterPriority, setFilterPriority] = useState("all");
   const [filterCategory, setFilterCategory] = useState("all");
+  const [sortBy, setSortBy] = useState("createdDate"); // ✅ EKLENEN
 
   useEffect(() => {
     if (projectId) {
@@ -115,19 +118,53 @@ function ProjectTaskView({ projectId }) {
     }
   };
 
-  const filteredTasks = tasks.filter((task) => {
-    const matchesSearch =
-      task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (task.description &&
-        task.description.toLowerCase().includes(searchTerm.toLowerCase()));
-    const matchesStatus =
-      filterStatus === "all" || task.status === filterStatus;
-    const matchesPriority =
-      filterPriority === "all" || task.priority === parseInt(filterPriority);
-    const matchesCategory =
-      filterCategory === "all" || task.categoryId === parseInt(filterCategory);
-    return matchesSearch && matchesStatus && matchesPriority && matchesCategory;
-  });
+  // ✅ Filtering ve Sorting - useMemo ile optimize edildi
+  const filteredTasks = useMemo(() => {
+    // 1. Filtreleme
+    let filtered = tasks.filter((task) => {
+      const matchesSearch =
+        task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (task.description &&
+          task.description.toLowerCase().includes(searchTerm.toLowerCase()));
+      const matchesStatus =
+        filterStatus === "all" || task.status === filterStatus;
+      const matchesPriority =
+        filterPriority === "all" || task.priority === parseInt(filterPriority);
+      const matchesCategory =
+        filterCategory === "all" || task.categoryId === parseInt(filterCategory);
+      return matchesSearch && matchesStatus && matchesPriority && matchesCategory;
+    });
+
+    // 2. Sıralama
+    filtered.sort((a, b) => {
+      switch (sortBy) {
+        case 'createdDate':
+          return new Date(b.createdDate) - new Date(a.createdDate);
+        case 'createdDateOld':
+          return new Date(a.createdDate) - new Date(b.createdDate);
+        case 'dueDate':
+          if (!a.dueDate) return 1;
+          if (!b.dueDate) return -1;
+          return new Date(a.dueDate) - new Date(b.dueDate);
+        case 'dueDateFar':
+          if (!a.dueDate) return 1;
+          if (!b.dueDate) return -1;
+          return new Date(b.dueDate) - new Date(a.dueDate);
+        case 'priority':
+          return b.priority - a.priority;
+        case 'priorityLow':
+          return a.priority - b.priority;
+        case 'title':
+          return a.title.localeCompare(b.title, 'tr');
+        case 'titleDesc':
+          return b.title.localeCompare(a.title, 'tr');
+        default:
+          return new Date(b.createdDate) - new Date(a.createdDate);
+      }
+    });
+
+    return filtered;
+  }, [tasks, searchTerm, filterStatus, filterPriority, filterCategory, sortBy]);
 
   const completedTasks = tasks.filter((t) => t.status === "Tamamlandı").length;
   const progressPercentage =
@@ -200,7 +237,7 @@ function ProjectTaskView({ projectId }) {
         </button>
       </div>
 
-      {/* Filters */}
+      {/* ✅ Filters - sortBy ve setSortBy eklendi */}
       <TaskFilters
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
@@ -208,8 +245,8 @@ function ProjectTaskView({ projectId }) {
         setFilterStatus={setFilterStatus}
         filterPriority={filterPriority}
         setFilterPriority={setFilterPriority}
-        filterCategory={filterCategory}
-        setFilterCategory={setFilterCategory}
+        sortBy={sortBy}         // ✅ EKLENEN
+        setSortBy={setSortBy}   // ✅ EKLENEN
       />
 
       {/* Tasks List */}

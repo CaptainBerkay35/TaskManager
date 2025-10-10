@@ -14,7 +14,7 @@ function TaskFilters({
       <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 sm:hidden">
         Filtreler
       </h3>
-      
+
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {/* Arama */}
         <div className="w-full">
@@ -71,8 +71,14 @@ function TaskFilters({
             Sıralama
           </label>
           <select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value)}
+            value={sortBy || "createdDate"} 
+            onChange={(e) => {
+              if (setSortBy && typeof setSortBy === "function") {
+                setSortBy(e.target.value);
+              } else {
+                console.error("setSortBy fonksiyonu bulunamadı!");
+              }
+            }}
             className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent bg-white dark:bg-gray-700 text-gray-800 dark:text-white transition appearance-none cursor-pointer"
           >
             <option value="createdDate">Eklenme Tarihi (Yeni → Eski)</option>

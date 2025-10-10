@@ -1,3 +1,4 @@
+// src/components/Task/TaskList.jsx
 import { useState } from "react";
 import { useTaskManager } from "../../hooks/useTaskManager";
 import { useTaskFilters } from "../../hooks/useTaskFilters";
@@ -13,7 +14,6 @@ import {
 } from "./TaskEmptyStates";
 
 function TaskList() {
-  // Custom hooks
   const {
     tasks,
     loading,
@@ -24,6 +24,8 @@ function TaskList() {
     refetch,
   } = useTaskManager();
 
+  const filterResults = useTaskFilters(tasks);
+  
   const {
     searchTerm,
     setSearchTerm,
@@ -33,8 +35,10 @@ function TaskList() {
     setFilterPriority,
     filterCategory,
     setFilterCategory,
+    sortBy,
+    setSortBy,
     filteredTasks,
-  } = useTaskFilters(tasks);
+  } = filterResults;
 
   // UI state
   const [showForm, setShowForm] = useState(false);
@@ -102,26 +106,24 @@ function TaskList() {
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
         <div>
           <h2 className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-white">
-            Görevlerim
+            Görevler
           </h2>
-          <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1">
-            Toplam {filteredTasks.length} görev
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            {filteredTasks.length} görev
           </p>
         </div>
         <button
           onClick={() => setShowForm(true)}
-          className="w-full sm:w-auto bg-indigo-600 text-white px-4 py-2.5 sm:py-2 rounded-lg hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 transition font-medium text-sm sm:text-base shadow-sm"
+          className="w-full sm:w-auto bg-indigo-600 dark:bg-indigo-500 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg hover:bg-indigo-700 dark:hover:bg-indigo-600 transition font-medium shadow-sm flex items-center justify-center gap-2"
         >
-          <span className="flex items-center justify-center gap-2">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-            Yeni Görev
-          </span>
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+          </svg>
+          <span>Yeni Görev</span>
         </button>
       </div>
 
-      {/* Filters - Already responsive from TaskFilters component */}
+      {/* Filters */}
       <TaskFilters
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
@@ -129,17 +131,19 @@ function TaskList() {
         setFilterStatus={setFilterStatus}
         filterPriority={filterPriority}
         setFilterPriority={setFilterPriority}
-        filterCategory={filterCategory}
-        setFilterCategory={setFilterCategory}
+        sortBy={sortBy}
+        setSortBy={setSortBy}
       />
 
-      {/* Task List / Empty States */}
-      {tasks.length === 0 ? (
-        <EmptyTasksState />
-      ) : filteredTasks.length === 0 ? (
-        <NoFilterResultsState />
+      {/* Task List */}
+      {filteredTasks.length === 0 ? (
+        tasks.length === 0 ? (
+          <EmptyTasksState onAddTask={() => setShowForm(true)} />
+        ) : (
+          <NoFilterResultsState />
+        )
       ) : (
-        <div className="grid gap-3 sm:gap-4">
+        <div className="space-y-3">
           {filteredTasks.map((task) => (
             <TaskCard
               key={task.id}
@@ -153,20 +157,20 @@ function TaskList() {
         </div>
       )}
 
-      {/* Task Form Modal - Already responsive */}
+      {/* Task Form Modal */}
       {showForm && (
         <TaskForm
-          onClose={handleFormClose}
-          onSuccess={refetch}
           editTask={editingTask}
+          onClose={handleFormClose}
+          onRefresh={refetch}
         />
       )}
 
-      {/* Delete Confirmation Dialog */}
+      {/* Delete Confirmation */}
       <ConfirmDialog
         isOpen={deleteConfirm.show}
         title="Görevi Sil"
-        message={`"${deleteConfirm.taskTitle}" görevini silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.`}
+        message={`"${deleteConfirm.taskTitle}" görevini silmek istediğinizden emin misiniz? Bu görevin tüm alt görevleri de silinecek. Bu işlem geri alınamaz.`}
         confirmText="Sil"
         cancelText="İptal"
         onConfirm={handleDeleteConfirm}

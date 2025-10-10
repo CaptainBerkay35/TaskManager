@@ -34,12 +34,12 @@ function ProjectDetailModal({ project, onClose, onTaskUpdate }) {
   };
 
   const handleAddTask = () => {
-    setEditingTask(null);
+    setEditingTask(null); // ✅ Yeni görev için null
     setShowTaskForm(true);
   };
 
   const handleEditTask = (task) => {
-    setEditingTask(task);
+    setEditingTask(task); // ✅ Düzenleme için task objesini gönder
     setShowTaskForm(true);
   };
 
@@ -101,13 +101,13 @@ function ProjectDetailModal({ project, onClose, onTaskUpdate }) {
 
   const handleTaskFormClose = () => {
     setShowTaskForm(false);
-    setEditingTask(null);
+    setEditingTask(null); // ✅ Form kapatılınca state'i temizle
   };
 
   const handleTaskFormSuccess = () => {
     fetchProjectTasks();
     setShowTaskForm(false);
-    setEditingTask(null);
+    setEditingTask(null); // ✅ Başarılı işlemden sonra temizle
     if (onTaskUpdate) onTaskUpdate();
   };
 
@@ -118,7 +118,7 @@ function ProjectDetailModal({ project, onClose, onTaskUpdate }) {
     <>
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-2 sm:p-4 z-50 overflow-y-auto">
         <div className="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl shadow-2xl dark:shadow-gray-900/50 w-full max-w-4xl my-4 sm:my-8 max-h-[95vh] sm:max-h-[90vh] overflow-hidden flex flex-col">
-          {/* Header - Responsive */}
+          {/* Header */}
           <div 
             className="p-4 sm:p-6 border-b border-gray-200 dark:border-gray-700 flex-shrink-0"
             style={{ backgroundColor: project.color + '15' }}
@@ -196,7 +196,7 @@ function ProjectDetailModal({ project, onClose, onTaskUpdate }) {
             )}
           </div>
 
-          {/* Content - Scrollable */}
+          {/* Content */}
           <div className="flex-1 overflow-y-auto p-4 sm:p-6">
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4">
               <h3 className="text-base sm:text-lg font-semibold text-gray-800 dark:text-white">
@@ -256,10 +256,10 @@ function ProjectDetailModal({ project, onClose, onTaskUpdate }) {
         </div>
       </div>
 
-      {/* Task Form Modal */}
+      {/* ✅ Task Form Modal - editTask prop olarak editingTask gönder */}
       {showTaskForm && (
         <TaskForm
-          task={editingTask}
+          editTask={editingTask}  
           onClose={handleTaskFormClose}
           onRefresh={handleTaskFormSuccess}
           defaultProjectId={project.id}  
