@@ -49,8 +49,8 @@ builder.Services.AddCors(options =>
         {
             policy.WithOrigins(
                 "http://localhost:3000",
-                "https://localhost:3000"
-            // Production URL'i sonra ekleyeceðiz
+                "https://localhost:3000",
+                "https://proud-pond-03090d903.1.azurestaticapps.net"
             )
             .AllowAnyMethod()
             .AllowAnyHeader()
