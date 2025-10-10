@@ -34,12 +34,12 @@ function ProjectDetailModal({ project, onClose, onTaskUpdate }) {
   };
 
   const handleAddTask = () => {
-    setEditingTask(null); // ✅ Yeni görev için null
+    setEditingTask(null);
     setShowTaskForm(true);
   };
 
   const handleEditTask = (task) => {
-    setEditingTask(task); // ✅ Düzenleme için task objesini gönder
+    setEditingTask(task); 
     setShowTaskForm(true);
   };
 
@@ -101,13 +101,13 @@ function ProjectDetailModal({ project, onClose, onTaskUpdate }) {
 
   const handleTaskFormClose = () => {
     setShowTaskForm(false);
-    setEditingTask(null); // ✅ Form kapatılınca state'i temizle
+    setEditingTask(null); 
   };
 
   const handleTaskFormSuccess = () => {
     fetchProjectTasks();
     setShowTaskForm(false);
-    setEditingTask(null); // ✅ Başarılı işlemden sonra temizle
+    setEditingTask(null);
     if (onTaskUpdate) onTaskUpdate();
   };
 
