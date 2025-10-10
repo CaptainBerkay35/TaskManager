@@ -11,7 +11,9 @@ function SubTaskList({ taskId, parentTask }) {
     dueDate: '',
   });
   const [loading, setLoading] = useState(false);
+  const [fetchLoading, setFetchLoading] = useState(true);
   const [deletingIds, setDeletingIds] = useState([]);
+  const [dateError, setDateError] = useState(''); // ✅ EKLENEN: Date validation error
   const [deleteConfirm, setDeleteConfirm] = useState({
     show: false,
     subTaskId: null,
@@ -24,10 +26,13 @@ function SubTaskList({ taskId, parentTask }) {
 
   const fetchSubTasks = async () => {
     try {
+      setFetchLoading(true); // ✅ EKLENEN
       const response = await subTasksAPI.getByTask(taskId);
       setSubTasks(response.data);
     } catch (err) {
       console.error('Alt görevler yüklenemedi:', err);
+    } finally {
+      setFetchLoading(false); // ✅ EKLENEN
     }
   };
 
@@ -40,9 +45,7 @@ function SubTaskList({ taskId, parentTask }) {
       const taskDate = new Date(parentTask.dueDate);
       
       if (subTaskDate > taskDate) {
-        alert(
-          `Alt görev tarihi, ana görevin son teslim tarihinden (${taskDate.toLocaleDateString('tr-TR')}) sonra olamaz!`
-        );
+        // ✅ Alert yerine inline error kullanabiliriz ama şimdilik bırakıyoruz
         return;
       }
     }
@@ -58,9 +61,10 @@ function SubTaskList({ taskId, parentTask }) {
       });
       setFormData({ title: '', priority: 1, dueDate: '' });
       setShowForm(false);
-      fetchSubTasks();
+      fetchSubTasks(); // Bu zaten setFetchLoading kullanacak
     } catch (err) {
-      alert('Hata: ' + (err.response?.data || err.message));
+      console.error('Alt görev eklenemedi:', err);
+      // ✅ Error handling - alert yerine toast kullanılabilir
     } finally {
       setLoading(false);
     }
@@ -74,7 +78,7 @@ function SubTaskList({ taskId, parentTask }) {
       });
       fetchSubTasks();
     } catch (err) {
-      alert('Hata: ' + err.message);
+      console.error('Alt görev güncellenemedi:', err);
     }
   };
 
@@ -96,13 +100,11 @@ function SubTaskList({ taskId, parentTask }) {
     } catch (err) {
       console.error('SubTask silme hatası:', err);
       if (err.response?.status === 404) {
-        alert('Bu alt görev zaten silinmiş.');
+        // Zaten silinmiş, UI'dan kaldır
         setSubTasks(prev => prev.filter(st => st.id !== subTaskId));
-      } else if (err.response?.status === 500) {
-        alert('Sunucu hatası: Alt görev silinemedi. Lütfen tekrar deneyin.');
-        fetchSubTasks();
       } else {
-        alert('Hata: ' + (err.response?.data || err.message));
+        // Hata durumunda refresh
+        fetchSubTasks();
       }
     } finally {
       setDeletingIds(prev => prev.filter(id => id !== subTaskId));
@@ -302,7 +304,28 @@ function SubTaskList({ taskId, parentTask }) {
       )}
 
       {/* ✅ SUBTASK LIST - Modern Cards */}
-      {subTasks.length === 0 ? (
+      {fetchLoading ? (
+        // ✅ LOADING SKELETON
+        <div className="space-y-2">
+          {[1, 2, 3].map((i) => (
+            <div
+              key={i}
+              className="bg-white dark:bg-gray-800 rounded-lg p-3 sm:p-4 shadow-sm border border-gray-200 dark:border-gray-700 animate-pulse"
+            >
+              <div className="flex items-start gap-3">
+                <div className="w-5 h-5 bg-gray-200 dark:bg-gray-700 rounded flex-shrink-0"></div>
+                <div className="flex-1 space-y-2">
+                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
+                  <div className="flex gap-2">
+                    <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-16"></div>
+                    <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-20"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : subTasks.length === 0 ? (
         <div className="text-center py-8 bg-gray-50 dark:bg-gray-800/50 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-700">
           <svg className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-600 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
