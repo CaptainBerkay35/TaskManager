@@ -160,42 +160,7 @@ function TaskDetailModal({ task, onClose }) {
               )}
             </div>
 
-            {/* Quick Stats */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              {task.dueDate && (
-                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3">
-                  <div className="text-xs text-white/80 mb-1">Son Tarih</div>
-                  <div className={`text-sm font-semibold ${isOverdue() ? 'text-red-200' : 'text-white'}`}>
-                    {isOverdue() && '⚠️ '}
-                    {new Date(task.dueDate).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' })}
-                  </div>
-                </div>
-              )}
-              
-              <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3">
-                <div className="text-xs text-white/80 mb-1">Oluşturulma</div>
-                <div className="text-sm font-semibold">
-                  {new Date(task.createdDate).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' })}
-                </div>
-              </div>
-
-              {totalSubTasks > 0 && (
-                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 col-span-2">
-                  <div className="text-xs text-white/80 mb-1">Alt Görevler</div>
-                  <div className="flex items-center gap-2">
-                    <div className="flex-1 h-2 bg-white/20 rounded-full overflow-hidden">
-                      <div 
-                        className="h-full bg-white transition-all duration-500"
-                        style={{ width: `${subTaskProgress}%` }}
-                      />
-                    </div>
-                    <span className="text-sm font-semibold">
-                      {completedSubTasks}/{totalSubTasks}
-                    </span>
-                  </div>
-                </div>
-              )}
-            </div>
+         
           </div>
         </div>
 

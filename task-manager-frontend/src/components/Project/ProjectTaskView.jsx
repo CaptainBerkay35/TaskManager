@@ -302,6 +302,7 @@ function ProjectTaskView({ projectId }) {
             if (window.refreshProjectSidebar) window.refreshProjectSidebar();
           }}
           editTask={editingTask}
+          defaultProjectId={projectId}
         />
       )}
 
