@@ -105,7 +105,6 @@ const AppContent = () => {
       />
 
       <div className="flex h-screen overflow-hidden">
-        {/* ✅ Desktop Sidebar - Mobilde gizli, sadece tasks tab'ında */}
         {activeTab === "tasks" && (
           <div className="hidden lg:block">
             <ProjectSidebar
