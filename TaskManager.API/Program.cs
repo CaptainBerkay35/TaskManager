@@ -7,6 +7,9 @@ using TaskManager.API.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.WebHost.UseUrls($"http://*:{Environment.GetEnvironmentVariable("PORT") ?? "5000"}");
+
+
 // Database Connection
 builder.Services.AddDbContext<TaskDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
