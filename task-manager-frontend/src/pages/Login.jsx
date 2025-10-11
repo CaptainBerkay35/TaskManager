@@ -23,11 +23,9 @@ function Login() {
     try {
       const result = await login(formData.username, formData.password);
       
-      // ✅ Sadece başarılı durumda yönlendirme yap
       if (result.success) {
         navigate('/', { replace: true });
       } else {
-        // ✅ Başarısız durumda hata mesajını göster, yönlendirme YAPMA
         setError(result.error || 'Giriş başarısız oldu');
       }
     } catch (err) {
