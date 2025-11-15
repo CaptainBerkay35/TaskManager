@@ -114,7 +114,7 @@ namespace TaskManager.API.Controllers
                 Color = dto.Color ?? "#6366f1",
                 Deadline = dto.Deadline,
                 UserId = userId,
-                CreatedDate = DateTime.Now,
+                CreatedDate = DateTime.UtcNow,
                 IsActive = true
             };
 
@@ -128,7 +128,7 @@ namespace TaskManager.API.Controllers
                 {
                     ProjectId = project.Id,
                     CategoryId = categoryId,
-                    AssignedDate = DateTime.Now,
+                    AssignedDate = DateTime.UtcNow,
                     IsPrimary = categoryId == dto.CategoryIds.First() // İlk kategori primary
                 };
                 _context.ProjectCategories.Add(projectCategory);
@@ -177,7 +177,7 @@ namespace TaskManager.API.Controllers
                     {
                         ProjectId = existingProject.Id,
                         CategoryId = categoryId,
-                        AssignedDate = DateTime.Now,
+                        AssignedDate = DateTime.UtcNow,
                         IsPrimary = categoryId == dto.CategoryIds.First()
                     };
                     _context.ProjectCategories.Add(projectCategory);
