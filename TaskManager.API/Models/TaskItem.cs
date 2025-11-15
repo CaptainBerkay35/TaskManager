@@ -10,7 +10,7 @@
         public string Status { get; set; } = "Bekliyor"; // Bekliyor, Devam Ediyor, Tamamlandı
 
 
-        public DateTime CreatedDate { get; set; } = DateTime.Now;
+        public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
         public DateTime? DueDate { get; set; }
         public DateTime? CompletedDate { get; set; }
         public int? UserId { get; set; }

@@ -10,7 +10,7 @@
         public Category Category { get; set; } = null!;
 
         // Ek bilgiler (opsiyonel)
-        public DateTime AssignedDate { get; set; } = DateTime.Now;
+        public DateTime AssignedDate { get; set; } = DateTime.UtcNow;
         public bool IsPrimary { get; set; } = false; // Ana kategori mi?
     }
 }
