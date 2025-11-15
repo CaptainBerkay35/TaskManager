@@ -71,7 +71,7 @@ namespace TaskManager.API.Controllers
             }
 
             // Son giriş tarihini güncelle
-            user.LastLoginDate = DateTime.Now;
+            user.LastLoginDate = DateTime.UtcNow; // ✅ UtcNow
             await _context.SaveChangesAsync();
 
             // Token oluştur
