@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+ï»¿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
@@ -27,7 +27,7 @@ builder.Services.AddSwaggerGen(options =>
         Scheme = "Bearer",
         BearerFormat = "JWT",
         In = Microsoft.OpenApi.Models.ParameterLocation.Header,
-        Description = "JWT Authorization header. Örnek: 'Bearer {token}'"
+        Description = "JWT Authorization header. Ã–rnek: 'Bearer {token}'"
     });
 
     options.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
@@ -92,10 +92,10 @@ var app = builder.Build();
 app.UseSwagger();
 app.UseSwaggerUI();
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 app.UseCors("AllowAll");
 
-app.UseAuthentication(); // ÖNEMLİ: UseAuthorization'dan önce olmalı
+app.UseAuthentication(); // Ã–NEMLÄ°: UseAuthorization'dan Ã¶nce olmalÄ±
 app.UseAuthorization();
 
 app.MapControllers();
@@ -112,26 +112,26 @@ using (var scope = app.Services.CreateScope())
 
         logger.LogInformation("Starting database migration...");
 
-        // Database'in var olduğundan emin ol
+        // Database'in var olduÄŸundan emin ol
         context.Database.EnsureCreated();
 
-        // Migration'ları uygula
+        // Migration'larÄ± uygula
         var pendingMigrations = context.Database.GetPendingMigrations();
         if (pendingMigrations.Any())
         {
             logger.LogInformation($"Applying {pendingMigrations.Count()} pending migrations...");
             context.Database.Migrate();
-            logger.LogInformation("? Database migration completed successfully!");
+            logger.LogInformation("âœ… Database migration completed successfully!");
         }
         else
         {
-            logger.LogInformation("? Database is up to date, no migrations needed.");
+            logger.LogInformation("âœ… Database is up to date, no migrations needed.");
         }
     }
     catch (Exception ex)
     {
-        logger.LogError(ex, "? Migration error: {ErrorMessage}", ex.Message);
-        // Migration başarısız olsa bile uygulama çalışmaya devam etsin
+        logger.LogError(ex, "âŒ Migration error: {ErrorMessage}", ex.Message);
+        // Migration baÅŸarÄ±sÄ±z olsa bile uygulama Ã§alÄ±ÅŸmaya devam etsin
     }
 }
 
