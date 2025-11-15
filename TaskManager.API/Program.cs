@@ -99,15 +99,34 @@ app.MapControllers();
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
+    var logger = services.GetRequiredService<ILogger<Program>>();
+
     try
     {
         var context = services.GetRequiredService<TaskDbContext>();
-        context.Database.Migrate();
-        Console.WriteLine("? Database migration completed successfully!");
+
+        logger.LogInformation("Starting database migration...");
+
+        // Database'in var olduðundan emin ol
+        context.Database.EnsureCreated();
+
+        // Migration'larý uygula
+        var pendingMigrations = context.Database.GetPendingMigrations();
+        if (pendingMigrations.Any())
+        {
+            logger.LogInformation($"Applying {pendingMigrations.Count()} pending migrations...");
+            context.Database.Migrate();
+            logger.LogInformation("? Database migration completed successfully!");
+        }
+        else
+        {
+            logger.LogInformation("? Database is up to date, no migrations needed.");
+        }
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"? Migration error: {ex.Message}");
+        logger.LogError(ex, "? Migration error: {ErrorMessage}", ex.Message);
+        // Migration baþarýsýz olsa bile uygulama çalýþmaya devam etsin
     }
 }
 
