@@ -7,6 +7,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="Dockerfile" />
+    <Compile Include=".dockerignore" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.20" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.9">
