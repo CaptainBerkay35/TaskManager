@@ -47,7 +47,7 @@ builder.Services.AddSwaggerGen(options =>
 
 // DbContext
 builder.Services.AddDbContext<TaskDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // JWT Service
 builder.Services.AddScoped<IJwtService, JwtService>();
