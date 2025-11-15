@@ -41,7 +41,7 @@ namespace TaskManager.API.Controllers
                 Email = dto.Email,
                 FullName = dto.FullName,
                 PasswordHash = _jwtService.HashPassword(dto.Password),
-                CreatedDate = DateTime.Now
+                CreatedDate = DateTime.UtcNow // ✅ UtcNow
             };
 
             _context.Users.Add(user);
