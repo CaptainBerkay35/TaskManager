@@ -70,24 +70,27 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-// CORS
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowAll",
-        policy =>
-        {
-            policy.WithOrigins(
-                    "https://taskmanager-frontend-phi.vercel.app", // Production URL
-                    "http://localhost:3000",                        // Local dev
-                    "https://*.vercel.app"                          // Preview deployments
-                )
-                .AllowAnyMethod()
-                .AllowAnyHeader()
-                .AllowCredentials();
-        });
-});
+
 
 var app = builder.Build();
+
+// ✅ MANUEL CORS MIDDLEWARE - EN ÜSTTE
+app.Use(async (context, next) =>
+{
+    context.Response.Headers.Add("Access-Control-Allow-Origin", "https://taskmanager-frontend-phi.vercel.app");
+    context.Response.Headers.Add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+    context.Response.Headers.Add("Access-Control-Allow-Headers", "Content-Type, Authorization");
+    context.Response.Headers.Add("Access-Control-Allow-Credentials", "true");
+
+    // Handle preflight OPTIONS request
+    if (context.Request.Method == "OPTIONS")
+    {
+        context.Response.StatusCode = 204;
+        return;
+    }
+
+    await next();
+});
 
 app.UseSwagger();
 app.UseSwaggerUI();
