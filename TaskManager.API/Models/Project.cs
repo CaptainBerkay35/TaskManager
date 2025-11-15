@@ -8,7 +8,7 @@ public class Project
     public string Color { get; set; } = "#6366f1";
     public DateTime? Deadline { get; set; }
     public int UserId { get; set; }
-    public DateTime CreatedDate { get; set; } = DateTime.Now;
+    public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
     public bool IsActive { get; set; } = true;
 
     public ICollection<TaskItem> Tasks { get; set; } = new List<TaskItem>();

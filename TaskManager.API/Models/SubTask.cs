@@ -8,7 +8,7 @@
         public int Priority { get; set; } = 1;
         public DateTime? DueDate { get; set; }
         public int TaskId { get; set; }
-        public DateTime CreatedDate { get; set; } = DateTime.Now;
+        public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
 
         // Navigation Property
         public TaskItem? Task { get; set; }
