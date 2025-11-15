@@ -6,6 +6,7 @@ using System.Text.Json.Serialization;
 using TaskManager.API.Data;
 using TaskManager.API.Services;
 
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Services
@@ -93,5 +94,21 @@ app.UseAuthentication(); // ÖNEMLÝ: UseAuthorization'dan önce olmalý
 app.UseAuthorization();
 
 app.MapControllers();
+
+
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        var context = services.GetRequiredService<TaskDbContext>();
+        context.Database.Migrate();
+        Console.WriteLine("? Database migration completed successfully!");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"? Migration error: {ex.Message}");
+    }
+}
 
 app.Run();
