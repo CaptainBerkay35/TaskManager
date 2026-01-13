@@ -2,7 +2,7 @@
 
 Modern ve kullanıcı dostu bir full-stack proje ve görev yönetim uygulaması. Hiyerarşik proje-görev-alt görev yapısı, kategori yönetimi ve kapsamlı takvim görünümü ile profesyonel iş takibi sağlar.
 
-🔗 **Live Demo:** [[https://taskmanager-frontend-xxxx.vercel.app](https://taskmanager-frontend-xxxx.vercel.app)](https://taskmanager-frontend-phi.vercel.app/)
+🔗 **Live Demo:** [[https://taskmanager-frontend-xxxx.vercel.app]](https://taskmanager-frontend-phi.vercel.app/)
 
 🔗 **Backend API:** [https://taskmanager-api-fl66.onrender.com](https://taskmanager-api-fl66.onrender.com)
 
