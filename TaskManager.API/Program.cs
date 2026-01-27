@@ -101,6 +101,8 @@ app.UseCors("AllowAll");
 app.UseAuthentication(); // ÖNEMLİ: UseAuthorization'dan önce olmalı
 app.UseAuthorization();
 
+// UptimeRobot ve diğer servisler için Sağlık Kontrolü (Health Check)
+app.MapGet("/", () => Results.Ok("API is up and running!"));
 app.MapControllers();
 
 
