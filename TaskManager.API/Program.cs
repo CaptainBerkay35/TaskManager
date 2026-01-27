@@ -74,13 +74,14 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 var app = builder.Build();
 
-// ✅ MANUEL CORS MIDDLEWARE - EN ÜSTTE
+// ✅ MANUEL CORS MIDDLEWARE - EN ÜSTTE (Hata vermemesi için güncellendi)
 app.Use(async (context, next) =>
 {
-    context.Response.Headers.Add("Access-Control-Allow-Origin", "https://taskmanager-frontend-phi.vercel.app");
-    context.Response.Headers.Add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-    context.Response.Headers.Add("Access-Control-Allow-Headers", "Content-Type, Authorization");
-    context.Response.Headers.Add("Access-Control-Allow-Credentials", "true");
+    // .Add yerine [] kullanarak "duplicate key" hatasını engelliyoruz
+    context.Response.Headers["Access-Control-Allow-Origin"] = "https://taskmanager-frontend-phi.vercel.app";
+    context.Response.Headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS";
+    context.Response.Headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization";
+    context.Response.Headers["Access-Control-Allow-Credentials"] = "true";
 
     // Handle preflight OPTIONS request
     if (context.Request.Method == "OPTIONS")
@@ -98,13 +99,13 @@ app.UseSwaggerUI();
 //app.UseHttpsRedirection();
 app.UseCors("AllowAll");
 
-app.UseAuthentication(); // ÖNEMLİ: UseAuthorization'dan önce olmalı
+app.UseAuthentication();
 app.UseAuthorization();
 
-// UptimeRobot ve diğer servisler için Sağlık Kontrolü (Health Check)
+// ✅ UptimeRobot için Sağlık Kontrolü (Health Check)
 app.MapGet("/", () => Results.Ok("API is up and running!"));
-app.MapControllers();
 
+app.MapControllers();
 
 using (var scope = app.Services.CreateScope())
 {
