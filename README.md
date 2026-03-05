@@ -2,7 +2,7 @@
 
 Modern ve kullanıcı dostu bir full-stack proje ve görev yönetim uygulaması. Hiyerarşik proje-görev-alt görev yapısı, kategori yönetimi ve kapsamlı takvim görünümü ile profesyonel iş takibi sağlar.
 
-🔗 **Live Demo:** [https://proud-pond-03090d903.1.azurestaticapps.net]([https://proud-pond-03090d903.1.azurestaticapps.net](https://taskmanager-frontend-phi.vercel.app/))
+🔗 **Live Demo:** [https://taskmanager-frontend-phi.vercel.app/](https://taskmanager-frontend-phi.vercel.app/)
 
 🔗 **Backend API:** [https://taskmanager-board-ffcph5e0fecveme4.germanywestcentral-01.azurewebsites.net/swagger](https://taskmanager-board-ffcph5e0fecveme4.germanywestcentral-01.azurewebsites.net/swagger)
 
